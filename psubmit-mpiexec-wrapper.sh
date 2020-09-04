@@ -19,10 +19,10 @@ function psub_env_check {
         local CHECK_NP=$PBS_NP
         local CHECK_PPN=$PBS_NUM_PPN
         local CHECK_DIRNAME=$(cd $(dirname "$0") && pwd -P)
-        [ "$CHECK_JOBID" != "$PSUBMIT_JOBID" ] && fatal "PSUBMIT_JOBID value is not correct"
+        PSUBMIT_JOBID=$CHECK_JOBID
         [ "$CHECK_NP" != "$PSUBMIT_NP" ] && fatal "PSUBMIT_NP value is not correct"
         [ "$CHECK_PPN" != "$PSUBMIT_PPN" ] && fatal "PSUBMIT_PPN value is not correct"
-        [ "$CHECK_DIRNAME" != "$PSUBMIT_DIRNAME" ] && fatal "PSUBMIT_DIRNAME value is not correct"
+        [ -z "$PSUBMIT_DIRNAME" ] && PSUBMIT_DIRNAME=$CHECK_DIRNAME
         ;;
     slurm)
         local CHECK_JOBID=$SLURM_JOBID
@@ -30,10 +30,10 @@ function psub_env_check {
         local CHECK_NP=$SLURM_NPROCS
         local CHECK_PPN=$(expr $SLURM_NPROCS / $SLURM_NNODES)
         local CHECK_DIRNAME=$(cd $(dirname "$0") && pwd -P)
-        [ "$CHECK_JOBID" != "$PSUBMIT_JOBID" ] && fatal "PSUBMIT_JOBID value is not correct"
+        PSUBMIT_JOBID=$CHECK_JOBID
         [ "$CHECK_NP" != "$PSUBMIT_NP" ] && fatal "PSUBMIT_NP value is not correct"
         [ "$CHECK_PPN" != "$PSUBMIT_PPN" ] && fatal "PSUBMIT_PPN value is not correct"
-        [ "$CHECK_DIRNAME" != "$PSUBMIT_DIRNAME" ] && fatal "PSUBMIT_DIRNAME value is not correct"
+        [ -z "$PSUBMIT_DIRNAME" ] && PSUBMIT_DIRNAME=$CHECK_DIRNAME
         ;;
     lsf)
         local CHECK_JOBID=$LSB_JOBID
@@ -43,10 +43,10 @@ function psub_env_check {
         local CHECK_NP=0
         for n in $(sort < $LSB_DJOB_HOSTFILE | uniq); do CHECK_NNODES=$(expr "$CHECK_NNODES" \+ 1); CHECK_NP=$(expr "$CHECK_NP" \+ "$CHECK_PPN"); done
         local CHECK_DIRNAME=$(cd $(dirname "$0") && pwd -P)
-        [ "$CHECK_JOBID" != "$PSUBMIT_JOBID" ] && fatal "PSUBMIT_JOBID value is not correct"
+        PSUBMIT_JOBID=$CHECK_JOBID
         [ "$CHECK_NP" != "$PSUBMIT_NP" ] && fatal "PSUBMIT_NP value is not correct"
         [ "$CHECK_PPN" != "$PSUBMIT_PPN" ] && fatal "PSUBMIT_PPN value is not correct"
-        [ "$CHECK_DIRNAME" != "$PSUBMIT_DIRNAME" ] && fatal "PSUBMIT_DIRNAME value is not correct"
+        [ -z "$PSUBMIT_DIRNAME" ] && PSUBMIT_DIRNAME=$CHECK_DIRNAME
         ;;
     vbbs)
         local CHECK_DIRNAME=$(cd $(dirname "$0") && pwd -P)
@@ -127,7 +127,7 @@ function psub_get_nodelist {
 }
 
 
-while getopts ":t:i:n:p:d:o:a:" opt; do
+while getopts ":t:i:n:p:d:o:a:x" opt; do
   case $opt in
     t) export PSUBMIT_BATCH_TYPE="$OPTARG"
       ;;
@@ -169,9 +169,7 @@ fi
 psub_get_nodelist
 info "Nodelist $PSUBMIT_NODELIST"
 
-set -x
 . "$MPIEXEC" $ARGS
-set +x
 
 info "Exiting..."
 

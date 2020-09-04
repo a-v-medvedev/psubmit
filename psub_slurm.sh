@@ -43,7 +43,8 @@ psub_submit() {
     n=$(expr "$NNODES" \* "$PPN")
     local resources=""
     [ -z "$NODETYPE" ] || resources="--gres=$NODETYPE"
-    sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources -D "$PWD" -N "$NNODES" -n "$n" -p "$QUEUE" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -i $jobid_short -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
+    echo $- | grep -q x && xopt="-x"
+    sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources -D "$PWD" -N "$NNODES" -n "$n" -p "$QUEUE" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" $xopt -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
     grep "Batch job submission failed" "$outfile" && exit 0
     local pattern="Submitted batch job "
     grep -q "$pattern" "$outfile"

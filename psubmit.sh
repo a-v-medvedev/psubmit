@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "$1" -o -z "$2" ]; then echo "Usage: " `basename $0` "-n NUM_NODES -p PROC_PER_NODE [-o options_file] [-a args]"; exit 1; fi
+if [ -z "$1" -o -z "$2" ]; then echo "Usage: " $(basename $0) "-n NUM_NODES -p PROC_PER_NODE [-o options_file] [-a args]"; exit 1; fi
 
 NNODES=1
 PPN=1
@@ -89,8 +89,7 @@ echo -ne "\n"
 
 ncancel="0"
 while [ ! -f "$FILE_OUT" ]; do
-    psub_check_job_status
-#    if [ "$jobstatus" == "NONE" ]; then echo "No job, sorry"; exit 1; fi
+    [ $(expr "$ncancel" % 10) == "0" ] && psub_check_job_status
     if [ "$jobstatus" == "C" -o "$jobstatus" == "NONE" ]; then 
 	    if [ "$ncancel" -gt "100" ]; then 
             if [ "$jobstatus" == "C" ]; then echo "No file $FILE_OUT. Can't continue"; fi
