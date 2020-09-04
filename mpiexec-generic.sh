@@ -1,0 +1,13 @@
+PSUBMIT_JOBID_SAVED=$PSUBMIT_JOBID
+
+eval "$PSUBMIT_INJOB_COMMANDS_OLD"
+PSUBMIT_JOBID=${PSUBMIT_JOBID_SAVED}.old
+. ${PSUBMIT_DIRNAME}/run-impi.sh $* 
+
+eval "$PSUBMIT_INJOB_COMMANDS_NEW"
+PSUBMIT_JOBID=${PSUBMIT_JOBID_SAVED}.new
+. ${PSUBMIT_DIRNAME}/run-impi.sh $* 
+
+PSUBMIT_JOBID=${PSUBMIT_JOBID_SAVED}
+./preproc --old=benchmark.${PSUBMIT_JOBID}.old.yaml --new=benchmark.${PSUBMIT_JOBID}.new.yaml --result=benchmark.$PSUBMIT_JOBID.yaml
+
