@@ -83,8 +83,6 @@ function psub_get_nodelist {
         ;;
     slurm)
         local NODELIST=""
-        #local CNT=$(expr index $SLURM_JOB_NODELIST "[,")
-        #if [ $CNT -ne 0 ]; then
         if is_any_char "$SLURM_JOB_NODELIST" "[,"; then
             for e in $(echo $SLURM_JOB_NODELIST | sed 's/,\([^0-9]\)/ \1/g'); do
                 #CNT=`expr index $e "["`
@@ -93,8 +91,6 @@ function psub_get_nodelist {
                     local main="`echo $e | sed 's/^\(.*\)\[.*$/\1/'`"
                     local var="`echo $e | sed 's/^.*\[\(.\+\)\]$/\1/;s/,/ /g'`"
                     for i in $var; do
-                        #CNT=`expr index $i "-"`
-                        #if [ $CNT -ne 0 ]; then
                         if is_any_char "$i" "-"; then
                             local begin="$(echo $i | cut -d- -f1)"
                             local end="$(echo $i | cut -d- -f2)"
@@ -120,7 +116,7 @@ function psub_get_nodelist {
         export PSUBMIT_NODELIST=$NODELIST
         ;;
     vbbs)
-        # FIXME Assume PSUBMIT_NODELIST comes with env??
+        # Assume PSUBMIT_NODELIST comes with env
         ;;
     direct)
         local NODELIST="$(hostname):$PSUBMIT_PPN"
@@ -133,34 +129,30 @@ function psub_get_nodelist {
 
 while getopts ":t:i:n:p:d:o:a:" opt; do
   case $opt in
-    t)
-      export PSUBMIT_BATCH_TYPE="$OPTARG"
+    t) export PSUBMIT_BATCH_TYPE="$OPTARG"
       ;;
-    i)
-      export PSUBMIT_JOBID="$OPTARG"
+    i) export PSUBMIT_JOBID="$OPTARG"
       ;;
-    p)
-      export PSUBMIT_PPN="$OPTARG"
+    p) export PSUBMIT_PPN="$OPTARG"
       ;;
-    n)
-      export PSUBMIT_NP="$OPTARG"
+    n) export PSUBMIT_NP="$OPTARG"
       ;;
-    d) 
-      export PSUBMIT_DIRNAME="$OPTARG"
+    d) export PSUBMIT_DIRNAME="$OPTARG"
       ;;
-    o)
-      OPTIONSFILE="$OPTARG"
+    o) OPTIONSFILE="$OPTARG"
       ;;
-    a) 
-      ARGS="$OPTARG"
+    a) ARGS="$OPTARG"
+      ;;
+    x) PSUBMIT_DBG=1 
       ;;
   esac
 done
 
+[ -z "$PSUBMIT_DBG" ] || set -x
 
 psub_env_check
 
-exec 1>output.$PSUBMIT_JOBID
+exec 1>psubmit_wrapper_output.$PSUBMIT_JOBID
 exec 2>&1
 
 info "PWD=$PWD"
@@ -169,12 +161,10 @@ if [ -f "$OPTIONSFILE" ]; then
 . "$OPTIONSFILE"
 fi
 
-if [ -z "$MPIEXEC" ]; then MPIEXEC="./mpiexec-generic.sh"; fi
-if [ -z "$TARGET_BIN" ]; then TARGET_BIN="hostname"; fi
+[ -z "$MPIEXEC" ] && MPIEXEC="./mpiexec-generic.sh"
+[ -z "$TARGET_BIN" ] && TARGET_BIN="hostname"
 
-if [ ! -z "$INJOB_INIT_COMMANDS" ]; then
-    eval "$INJOB_INIT_COMMANDS"
-fi
+[ -z "$INJOB_INIT_COMMANDS" ] || eval "$INJOB_INIT_COMMANDS"
 
 psub_get_nodelist
 info "Nodelist $PSUBMIT_NODELIST"

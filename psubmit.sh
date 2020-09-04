@@ -1,5 +1,4 @@
 #!/bin/bash
-#set -x
 
 if [ -z "$1" -o -z "$2" ]; then echo "Usage: " `basename $0` "-n NUM_NODES -p PROC_PER_NODE [-o options_file] [-a args]"; exit 1; fi
 
@@ -93,19 +92,19 @@ while [ ! -f "$FILE_OUT" ]; do
     psub_check_job_status
 #    if [ "$jobstatus" == "NONE" ]; then echo "No job, sorry"; exit 1; fi
     if [ "$jobstatus" == "C" -o "$jobstatus" == "NONE" ]; then 
-	    if [ "$ncancel" -gt "5" ]; then 
+	    if [ "$ncancel" -gt "100" ]; then 
             if [ "$jobstatus" == "C" ]; then echo "No file $FILE_OUT. Can't continue"; fi
             if [ "$jobstatus" == "NONE" ]; then echo "No file $FILE_OUT and no job in joblist. Can't continue"; fi
             exit 1
         fi
 	    ncancel=`expr $ncancel \+ 1`
     fi
-    sleep 5
+    sleep 0.1
 done
 
+sleep 0.5
 psub_check_job_status
 
-#tail -f "$FILE_OUT"
 while true
 do
     psub_check_job_done
@@ -118,6 +117,5 @@ do
     if [ "$jobstatus" == "E" ]; then psub_check_job_done; break; fi
     sleep 1
 done
-#[ "$jobdone" == "1" ] && echo "Job done"
 psub_move_outfiles
 

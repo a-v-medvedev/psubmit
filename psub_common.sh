@@ -18,7 +18,7 @@ function psub_common_move_outfiles() {
     local home="$SCRATCH_HOME"
     mkdir -p $dir/results.$jobid_short
     mv $FILE_OUT $dir/results.$jobid_short
-    mv output.$jobid_short $dir/results.$jobid_short
+    mv psubmit_wrapper_output.$jobid_short $dir/results.$jobid_short
     local rank0=""
     local erank0=""
     local errfiles=""
