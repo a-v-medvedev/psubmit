@@ -71,7 +71,7 @@ function is_any_char {
     local str="$1"
     local chars="$2"
     local cnt=$(expr index "$str" "$chars")
-    return [ $cnt != 0 ]
+    [ "$cnt" != "0" ] && return 0 || return 1
 }
 
 function psub_get_nodelist {
@@ -85,8 +85,6 @@ function psub_get_nodelist {
         local NODELIST=""
         if is_any_char "$SLURM_JOB_NODELIST" "[,"; then
             for e in $(echo $SLURM_JOB_NODELIST | sed 's/,\([^0-9]\)/ \1/g'); do
-                #CNT=`expr index $e "["`
-                #if [ $CNT -ne 0 ]; then
                 if is_any_char "$e" "["; then
                     local main="`echo $e | sed 's/^\(.*\)\[.*$/\1/'`"
                     local var="`echo $e | sed 's/^.*\[\(.\+\)\]$/\1/;s/,/ /g'`"
@@ -151,6 +149,9 @@ done
 [ -z "$PSUBMIT_DBG" ] || set -x
 
 psub_env_check
+
+info "PSUBMIT_JOBID=$PSUBMIT_JOBID PSUBMIT_DIRNAME=$PSUBMIT_DIRNAME"
+info "args: $*"
 
 exec 1>psubmit_wrapper_output.$PSUBMIT_JOBID
 exec 2>&1

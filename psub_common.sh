@@ -61,9 +61,12 @@ function psub_common_move_outfiles() {
     [ -z "$rank0" ] || echo "Rank 0 output:" $dir/results.$jobid_short/rank0
     [ -z "$erank0" ] || echo "Rank 0 errout:" $dir/results.$jobid_short/erank0
     echo "Batch system output:" $dir/results.$jobid_short/`basename $FILE_OUT`
+    echo "Psubmit wrapper output:" $dir/results.$jobid_short/psubmit_wrapper_output.$jobid_short
     if true; then
         echo -ne "\n--- Batch system output: ---\n"
         tail -n15 $dir/results.$jobid_short/$(basename $FILE_OUT)
+        echo -ne "\n--- Psubmit wrapper output: ---\n"
+        tail -n15 $dir/results.$jobid_short/psubmit_wrapper_output.$jobid_short
         [ -z "$rank0" ] || ( echo -ne "\n--- Rank 0 output: ---\n" && tail -n15 $dir/results.$jobid_short/rank0 )
         [ -z "$erank0" ] || ( echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $dir/results.$jobid_short/erank0 )
         [ -z "$errfiles" ] || ( echo -ne "\n--- NOTE: THERE ARE ERROR OUTPUT FILES\n" && cat $dir/results.$jobid_short/err.$jobid_short.* | head )

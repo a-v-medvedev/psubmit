@@ -21,7 +21,7 @@ psub_check_job_status() {
             ;;
         CF) 
             ;;
-        *) echo ">> psub_slurm: UNEXPECTED: squeue out: $queue_out"; jobstatus="NONE"
+        *) echo ">> psub_slurm: UNEXPECTED: ($jobstatus) in squeue out: $queue_out"; jobstatus="NONE"
     esac
     psub_update_oldjobstatus
 }
@@ -44,6 +44,7 @@ psub_submit() {
     local resources=""
     [ -z "$NODETYPE" ] || resources="--gres=$NODETYPE"
     echo $- | grep -q x && xopt="-x"
+    [ -z "$JOB_NAME" ] && JOB_NAME=$(basename "$TARGET_BIN")
     sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources -D "$PWD" -N "$NNODES" -n "$n" -p "$QUEUE" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" $xopt -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
     grep "Batch job submission failed" "$outfile" && exit 0
     local pattern="Submitted batch job "

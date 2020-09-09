@@ -25,8 +25,8 @@ else
 
     echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
     echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)
-    echo ">>> PSUBMIT: ldd:"
-    ldd $(which $TARGET_BIN)
+#    echo ">>> PSUBMIT: ldd:"
+#    ldd $(which $TARGET_BIN)
     
     echo $- | grep -q x && omit_setx=true || set -x
     mpirun --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS

@@ -18,7 +18,8 @@ else
     
     echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
     echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)
-    echo ">>> PSUBMIT: ldd:"
+#    echo ">>> PSUBMIT: ldd:"
+#    ldd $(which $TARGET_BIN)
     
     [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 
