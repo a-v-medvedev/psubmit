@@ -1,6 +1,6 @@
 rm -f err.$PSUBMIT_JOBID.* out.$PSUBMIT_JOBID.*
 
-t1=$(date +"%s")
+time1=$(date +"%s")
 
 ALL_ARGS=$(eval echo '' $*)
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
@@ -27,7 +27,7 @@ else
     mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$TARGET_BIN" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
 
-    t2=$(date +"%s");
-    [ "$(expr $t2 - $t1)" -lt "2" ] && sleep $(expr 2 - $t2 + $t1)
-
+    time2=$(date +"%s");
+    [ "$(expr $time2 - $time1)" -lt "2" ] && sleep $(expr 2 - $time2 + $time1)
+    
 fi

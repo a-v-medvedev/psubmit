@@ -33,6 +33,6 @@ else
     [ -z "$omit_setx" ] && set +x
 
     time2=$(date +"%s");
-    [ "$(expr $time2 - $time1)" -lt "2" ] && sleep $(expr 2 - $t2 + $t1)
+    [ "$(expr $time2 - $time1)" -lt "2" ] && sleep $(expr 2 - $time2 + $time1)
 
 fi

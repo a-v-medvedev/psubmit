@@ -170,7 +170,11 @@ fi
 psub_get_nodelist
 info "Nodelist $PSUBMIT_NODELIST"
 
+if [ -z "$ARGS" ]; then
+. "$MPIEXEC" ""
+else
 . "$MPIEXEC" $ARGS
+fi
 
 info "Exiting..."
 
