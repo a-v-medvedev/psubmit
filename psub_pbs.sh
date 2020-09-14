@@ -23,14 +23,20 @@ psub_cancel() {
     if [ "$jobid" != "" -a "$jobcancelled" == "" ]; then qdel "$jobid"; jobcancelled="$jobid"; fi
 }
 
+PBSFILE=""
 psub_submit() {
     local outfile=$(mktemp -u .out.XXXXXXX)
     rm -f "$outfile"
-    local pbsfile=$(mktemp -u submit.XXXXXXX.pbs)
-    echo psubmit-mpiexec-wrapper.sh -t pbs -i $jobid_short -n "$NP" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" >> $pbsfile
+    PBSFILE=$(mktemp -u submit.XXXXXXX.pbs)
+    local n=$(expr "$NNODES" \* "$PPN")
+    [ -z "$JOB_NAME" ] && JOB_NAME=$(basename "$TARGET_BIN")
+    echo $- | grep -q x && xopt="-x"
+    echo psubmit-mpiexec-wrapper.sh -w "$PWD" -t pbs -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" $xopt >> $PBSFILE
+    local queue=""
+    [ -z "$QUEUE" ] || queue="-q $QUEUE"
     local nodetype=""
     [ -z "$NODETYPE" ] || nodetype=":$NODETYPE";
-    qsub -l "nodes=${NNODES}:ppn=${PPN}${nodetype},walltime=00:$TIME_LIMIT:00" -q "$QUEUE" "$pbsfile" 2>&1 | tee "$outfile"
+    qsub -N "pbs_output" -l "nodes=${NNODES}:ppn=${PPN}${nodetype},walltime=00:$TIME_LIMIT:00" $queue "$PBSFILE" 2>&1 | tee "$outfile"
     grep -q "^[0-9]*\.$QUEUE_SUFFIX$" "$outfile"
     if [ $? != "0" ]; then rm -f "$outfile"; exit 0; fi
     export jobid=$(grep "^[0-9]*\.$QUEUE_SUFFIX$" "$outfile")
@@ -43,13 +49,18 @@ psub_set_paths() {
 }
 
 psub_set_outfiles() {
-    FILE_OUT=pbs-output.$jobid_short
+    FILE_OUT=pbs_output.o$jobid_short
 }
 
 psub_move_outfiles() {
     psub_common_move_outfiles
+    local dir="$SCRATCH_PWD"
+    local target="$dir/results.$jobid_short"
+    mv pbs_output.e$jobid_short "$target"
+    [ -z "$PBSFILE" ] || rm -f $PBSFILE
 }
 
 psub_cleanup() {
-    psub_common_cleanup() 
+    psub_common_cleanup 
+    [ -z "$PBSFILE" ] || rm -f $PBSFILE
 }

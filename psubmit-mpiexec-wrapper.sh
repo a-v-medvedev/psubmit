@@ -14,7 +14,6 @@ function info() {
 function psub_env_check {
     case "$PSUBMIT_BATCH_TYPE" in
     pbs)
-        cd $PBS_O_WORKD 
         local CHECK_JOBID=`echo $PBS_JOBID | awk -F. '{print $1}'`
         local CHECK_NP=$PBS_NP
         local CHECK_PPN=$PBS_NUM_PPN
@@ -78,7 +77,7 @@ function psub_get_nodelist {
     case "$PSUBMIT_BATCH_TYPE" in
     pbs)
         local NODELIST=""
-        for n in $(sort < $PBS_NODEFILE | uniq); do $(add_element "$NODELIST" "$n" "$PSUBMIT_PPN"); done
+        for n in $(sort < $PBS_NODEFILE | uniq); do NODELIST=$(add_element "$NODELIST" "$n" "$PSUBMIT_PPN"); done
         export PSUBMIT_NODELIST=$NODELIST
         ;;
     slurm)
@@ -124,8 +123,7 @@ function psub_get_nodelist {
 
 }
 
-
-while getopts ":t:i:n:p:d:o:a:x" opt; do
+while getopts ":w:t:i:n:p:d:o:a:x" opt; do
   case $opt in
     t) export PSUBMIT_BATCH_TYPE="$OPTARG"
       ;;
@@ -142,6 +140,8 @@ while getopts ":t:i:n:p:d:o:a:x" opt; do
     a) ARGS="$OPTARG"
       ;;
     x) PSUBMIT_DBG=1 
+      ;;
+    w) cd "$OPTARG"
       ;;
   esac
 done
