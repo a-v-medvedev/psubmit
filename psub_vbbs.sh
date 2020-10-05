@@ -26,7 +26,7 @@ function psub_check_job_status() {
             cat $outfile > $FILE_OUT
 
             # Start a background ssh session
-            ssh $headnode export PATH=$PATH \&\& export LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \&\& export PSUBMIT_NODELIST="$PSUBMIT_NODELIST" \&\& cd "$PWD" \&\& timeout ${TIME_LIMIT}m psubmit-mpiexec-wrapper.sh -t vbbs -i $jobid_short -n "$NP" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" > "$FILE_OUT" 2>&1 &
+            ssh $headnode export PATH=$PATH \&\& export LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \&\& export PSUBMIT_NODELIST="$PSUBMIT_NODELIST" \&\& cd "$PWD" \&\& timeout -k20 ${TIME_LIMIT}m $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t vbbs -i $jobid_short -n "$NP" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" > "$FILE_OUT" 2>&1 &
         fi
     fi
     if [ "$jobstatus" == "R" ]; then
@@ -49,7 +49,7 @@ function psub_cancel() {
 	if [ "$jobid" != "" -a "$jobcancelled" == "" ]; then
         # ssh to a node and kill
         headnode=$(head -n1 hostfile.$jobid)
-        ssh $headnode killall vbbs-run.sh
+        ssh $headnode killall psubmit-mpiexec-wrapper.sh
         vbbs stop $jobid
 		jobcancelled="$jobid"
 	fi
@@ -65,13 +65,13 @@ function psub_submit() {
     if [ $? != 0 ]; then echo ">> psub_vbbs: VBBS failed on start"; exit 1; fi
     jobstatus="Q"
     local cnt=0
-    while [ "$cnt" -lt 5 ]; do
+    while [ "$cnt" -lt 60 ]; do
         jobid=$(cat $outfile | grep 'id:' | cut -d ' ' -f2)
         if [ -z "$jobid" ]; then sleep 1; cnt=$(expr "$cnt" \+ 1); continue; fi
         jobid_short=$jobid
         break;
     done
-    if [ -z "$jobid" ]; then jobstatus="NONE"; return; fi
+    if [ -z "$jobid" ]; then jobstatus="NONE"; echo ">> psub_vbbs: cannot find output of 'vbbs start'"; return; fi
 }
 
 function psub_set_paths() {

@@ -23,13 +23,18 @@ else
     # The line below is to cut off CUDA from the environment
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
 
+    [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+
     echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
+    echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
     echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)
+    [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
+#    echo ">>> PSUBMIT: PATH is: " $PATH
 #    echo ">>> PSUBMIT: ldd:"
 #    ldd $(which $TARGET_BIN)
     
     echo $- | grep -q x && omit_setx=true || set -x
-    mpirun --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
+    mpirun $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
 
     time2=$(date +"%s");
