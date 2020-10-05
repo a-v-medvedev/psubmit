@@ -31,7 +31,7 @@ psub_submit() {
     local n=$(expr "$NNODES" \* "$PPN")
     [ -z "$JOB_NAME" ] && JOB_NAME=$(basename "$TARGET_BIN")
     echo $- | grep -q x && xopt="-x"
-    echo psubmit-mpiexec-wrapper.sh -w "$PWD" -t pbs -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" $xopt >> $PBSFILE
+    echo $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -w "$PWD" -t pbs -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" $xopt >> $PBSFILE
     local queue=""
     [ -z "$QUEUE" ] || queue="-q $QUEUE"
     local nodetype=""

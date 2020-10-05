@@ -79,6 +79,7 @@ function psub_get_nodelist {
         local NODELIST=""
         for n in $(sort < $PBS_NODEFILE | uniq); do NODELIST=$(add_element "$NODELIST" "$n" "$PSUBMIT_PPN"); done
         export PSUBMIT_NODELIST=$NODELIST
+        cp $PBS_NODEFILE hostfile.$PSUBMIT_JOBID
         ;;
     slurm)
         local NODELIST=""
