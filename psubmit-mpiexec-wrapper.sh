@@ -159,12 +159,23 @@ exec 2>&1
 
 info "PWD=$PWD"
 
+TARGET_BIN="hostname"
+MPIEXEC="generic"
+BATCH="slurm"
+
 if [ -f "$OPTIONSFILE" ]; then
 . "$OPTIONSFILE"
 fi
 
-[ -z "$MPIEXEC" ] && MPIEXEC="./mpiexec-generic.sh"
-[ -z "$TARGET_BIN" ] && TARGET_BIN="hostname"
+export MPIEXEC=$PSUBMIT_DIRNAME/mpiexec-${MPIEXEC}.sh
+export BATCH=$PSUBMIT_DIRNAME/psub_${BATCH}.sh
+
+if [ -f "$BATCH" ]; then
+    . "$BATCH"
+else
+    echo "Cannot open batch system script:" "$BATCH"
+    exit 1
+fi
 
 [ -z "$INJOB_INIT_COMMANDS" ] || eval "$INJOB_INIT_COMMANDS"
 

@@ -31,8 +31,11 @@ function psub_common_move_outfiles() {
         local f=$(. "$MPIEXEC" --show-rank0-out)
         if [ "$f" != "" ]; then
             if [ -f "$dir/results.$jobid_short/$f" ]; then
-                ln -s "$dir/results.$jobid_short/$f" "$dir/results.$jobid_short/rank0"
+                olddir=$PWD
+                cd "$dir/results.$jobid_short"
+                ln -s "$f" "rank0"
                 rank0="TRUE"
+                cd $olddir
             fi
         fi
     fi
@@ -44,8 +47,11 @@ function psub_common_move_outfiles() {
         f=$(. "$MPIEXEC" --show-rank0-err)
         if [ "$f" != "" ]; then
             if [ -f "$dir/results.$jobid_short/$f" ]; then
-                ln -s "$dir/results.$jobid_short/$f" "$dir/results.$jobid_short/erank0"
+                olddir=$PWD
+                cd "$dir/results.$jobid_short"
+                ln -s "$f" "erank0"
                 erank0="TRUE"
+                cd $olddir
             fi
         fi
         errfiles="TRUE"
@@ -58,11 +64,11 @@ function psub_common_move_outfiles() {
     if [ "$r" != "" ]; then
         mv  $dir/*.${jobid_short}.* $dir/results.$jobid_short
     fi
-    echo "Results collected:" $dir/results.$jobid_short
-    [ -z "$rank0" ] || echo "Rank 0 output:" $dir/results.$jobid_short/rank0
-    [ -z "$erank0" ] || echo "Rank 0 errout:" $dir/results.$jobid_short/erank0
-    echo "Batch system output:" $dir/results.$jobid_short/`basename $FILE_OUT`
-    echo "Psubmit wrapper output:" $dir/results.$jobid_short/psubmit_wrapper_output.$jobid_short
+    echo "Results collected:" "results.${jobid_short}/"
+    [ -z "$rank0" ] || echo "Rank 0 output:" results.$jobid_short/rank0
+    [ -z "$erank0" ] || echo "Rank 0 errout:" results.$jobid_short/erank0
+    echo "Batch system output:" results.$jobid_short/`basename $FILE_OUT`
+    echo "Psubmit wrapper output:" results.$jobid_short/psubmit_wrapper_output.$jobid_short
     if true; then
         echo -ne "\n--- Batch system output: ---\n"
         tail -n15 $dir/results.$jobid_short/$(basename $FILE_OUT)

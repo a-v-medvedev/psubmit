@@ -1,11 +1,11 @@
-QUEUE=test
-#QUEUE_SUFFIX="" # PBS-specific
-#NODETYPE=
-TIME_LIMIT=10
-TARGET_BIN=hostname
-JOB_NAME="$TARGET_BIN"
-INIT_COMMANDS=''
-INJOB_INIT_COMMANDS=''
+QUEUE=test                # queue name
+#QUEUE_SUFFIX=""          # PBS-specific: often queue name has suffix in PBS
+#NODETYPE=                # sometimes is required to denote partitions or specific resources in slurm
+TIME_LIMIT="10"           # in minutes
+TARGET_BIN="hostname"     # binary to run which mpirun/mpiexec, full path, "./" as a path normally works
+JOB_NAME="my_testjob"     # default is: "$TARGET_BIN"
+INIT_COMMANDS=''          # execuled with eval before job submit
+INJOB_INIT_COMMANDS=''    # execuled with eval before mpirun
 
-MPIEXEC=$PSUBMIT_DIRNAME/mpiexec-impi.sh
-. $PSUBMIT_DIRNAME/psub_slurm.sh
+MPIEXEC="impi"            # options: impi, impixtmp, ompi1, ompi3, mvapich
+BATCH="slurm"             # options: slurm, pbs, lsf, vbbs, direct
