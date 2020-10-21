@@ -45,12 +45,24 @@ TIME_LIMIT=10
 INIT_COMMANDS=""
 INJOB_INIT_COMMANDS=""
 TARGET_BIN="hostname"
-MPIEXEC=./mpiexec-generic.sh
+MPIEXEC="generic"
+#MPIEXEC=./mpiexec-generic.sh
+BATCH="slurm"
 
 if [ -f "$OPTSCRIPT" ]; then
     . "$OPTSCRIPT"
 else
     echo "Cannot open options script:" "$OPTSCRIPT"
+    exit 1
+fi
+
+export MPIEXEC=$PSUBMIT_DIRNAME/mpiexec-${MPIEXEC}.sh
+export BATCH=$PSUBMIT_DIRNAME/psub_${BATCH}.sh
+
+if [ -f "$BATCH" ]; then
+    . "$BATCH"
+else
+    echo "Cannot open batch system script:" "$BATCH"
     exit 1
 fi
 
@@ -77,6 +89,7 @@ check_bash_func_declared psub_check_job_done
 check_bash_func_declared psub_cancel
 
 [ ! -z "$PSUBMIT_DBG" ] && set -x 
+
 psub_submit
 psub_set_paths
 psub_set_outfiles
@@ -116,5 +129,7 @@ do
     if [ "$jobstatus" == "E" ]; then psub_check_job_done; break; fi
     sleep 1
 done
+
 psub_move_outfiles
+
 
