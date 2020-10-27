@@ -14,14 +14,14 @@ function psub_check_job_status() {
             jobstatus="R"
 
             # make up a node list
-            cat $outfile | grep 'node:' | cut -d ' ' -f2 > hostfile.$jobid
+            cat $outfile | grep 'node:' | awk -vppn=$PPN '{print $2 ":" ppn }' > hostfile.$jobid
             for n in $(cat hostfile.$jobid); do
                 PSUBMIT_NODELIST=$PSUBMIT_NODELIST,${n}:$PPN
             done
             export PSUBMIT_NODELIST=`echo $PSUBMIT_NODELIST | sed 's/^,//'`
 
             # ssh and start run-mpi script
-            headnode=$(head -n1 hostfile.$jobid)
+            headnode=$(head -n1 hostfile.$jobid | cut -d: -f1)
             NP=$(expr "$NNODES" \* "$PPN")
             cat $outfile > $FILE_OUT
 
@@ -48,7 +48,7 @@ function psub_check_job_done() {
 function psub_cancel() {
 	if [ "$jobid" != "" -a "$jobcancelled" == "" ]; then
         # ssh to a node and kill
-        headnode=$(head -n1 hostfile.$jobid)
+        headnode=$(head -n1 hostfile.$jobid | cut -d: -f1)
         ssh $headnode killall psubmit-mpiexec-wrapper.sh
         vbbs stop $jobid
 		jobcancelled="$jobid"
