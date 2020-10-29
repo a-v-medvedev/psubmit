@@ -33,6 +33,7 @@ else
 		ssh ${node} "chmod +x $newexecname"; 
 	done
 
+    export I_MPI_HYDRA_BOOTSTRAP="ssh"
     echo $- | grep -q x && omit_setx=true || set -x
 	mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$newexecname" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
