@@ -41,6 +41,7 @@ psub_submit() {
     if [ $? != "0" ]; then rm -f "$outfile"; exit 0; fi
     export jobid=$(grep "^[0-9]*\.$QUEUE_SUFFIX$" "$outfile")
     export jobid_short=`echo $jobid | awk -F. '{ print $1 }'`
+    rm "$outfile"
     sleep 2
 }
 
