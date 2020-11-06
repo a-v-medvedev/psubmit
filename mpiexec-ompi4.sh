@@ -13,9 +13,9 @@ NUL="0"
 [ "$PSUBMIT_NP" -gt 10000 ] && NUL="00000"
 
 if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
-    echo "out.${PSUBMIT_JOBID}.1.$NUL"
+    echo "$dir/1/rank.$NUL/stdout"
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
-    echo "err.${PSUBMIT_JOBID}.1.$NUL"
+    echo "$dir/1/rank.$NUL/stdout"
 else
 
     [ "$ALL_ARGS" == "--" ] && ALL_ARGS=""
@@ -23,17 +23,23 @@ else
     # The line below is to cut off CUDA from the environment
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
 
+    [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+
     echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
-    echo ">>> PSUBMIT: Executable is: " $(which $TARGET_BIN)
+    echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
+    echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)
+    [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
+#    echo ">>> PSUBMIT: PATH is: " $PATH
 #    echo ">>> PSUBMIT: ldd:"
 #    ldd $(which $TARGET_BIN)
     
     time2=$(date +"%s");
     echo $- | grep -q x && omit_setx=true || set -x
-    mpirun --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
+    mpirun -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" -mca pml ucx -mca btl ^vader,tcp,openib --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
 
     time3=$(date +"%s");
+    walltime=$(expr $time3 - $time2)
     [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
     echo ">>> PSUBMIT: Walltime: $walltime"
 fi

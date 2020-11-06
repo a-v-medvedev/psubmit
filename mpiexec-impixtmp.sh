@@ -1,6 +1,6 @@
 rm -f err.$PSUBMIT_JOBID.* out.$PSUBMIT_JOBID.*
 
-t1=$(date +"%s")
+time1=$(date +"%s")
 
 ALL_ARGS=$(eval echo '' $*)
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
@@ -17,7 +17,7 @@ else
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
 
     echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-    echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)
+    echo ">>> PSUBMIT: Executable is: " $(which $TARGET_BIN)
 #    echo ">>> PSUBMIT: ldd:"
 #    ldd $(which $TARGET_BIN)
 
@@ -33,6 +33,7 @@ else
 		ssh ${node} "chmod +x $newexecname"; 
 	done
 
+    time2=$(date +"%s");
     export I_MPI_HYDRA_BOOTSTRAP="ssh"
     echo $- | grep -q x && omit_setx=true || set -x
 	mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$newexecname" $ALL_ARGS
@@ -43,7 +44,8 @@ else
 		ssh $node "rm -f $newexecname"; 
 	done
 
-    t2=$(date +"%s");
-    [ "$(expr $t2 - $t1)" -lt "2" ] && sleep $(expr 2 - $t2 + $t1)
-
+    time3=$(date +"%s");
+    walltime="$(expr $time3 - $time2)"
+    [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
+    echo ">>> PSUBMIT: Walltime: $walltime"
 fi

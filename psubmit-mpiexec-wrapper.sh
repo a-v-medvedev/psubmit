@@ -74,6 +74,7 @@ function is_any_char {
 }
 
 function psub_get_nodelist {
+    set -f
     case "$PSUBMIT_BATCH_TYPE" in
     pbs)
         local NODELIST=""
@@ -84,10 +85,10 @@ function psub_get_nodelist {
     slurm)
         local NODELIST=""
         if is_any_char "$SLURM_JOB_NODELIST" "[,"; then
-            for e in $(echo $SLURM_JOB_NODELIST | sed 's/,\([^0-9]\)/ \1/g'); do
+            for e in $(echo "$SLURM_JOB_NODELIST" | sed 's/,\([^0-9]\)/ \1/g'); do
                 if is_any_char "$e" "["; then
-                    local main="`echo $e | sed 's/^\(.*\)\[.*$/\1/'`"
-                    local var="`echo $e | sed 's/^.*\[\(.\+\)\]$/\1/;s/,/ /g'`"
+                    local main="`echo "$e" | sed 's/^\(.*\)\[.*$/\1/'`"
+                    local var="`echo "$e" | sed 's/^.*\[\(.\+\)\]$/\1/;s/,/ /g'`"
                     for i in $var; do
                         if is_any_char "$i" "-"; then
                             local begin="$(echo $i | cut -d- -f1)"
@@ -104,9 +105,9 @@ function psub_get_nodelist {
                 fi
             done
         else
-            NODELIST=$SLURM_JOB_NODELIST:$PSUBMIT_PPN
+            NODELIST="$SLURM_JOB_NODELIST:$PSUBMIT_PPN"
         fi
-        export PSUBMIT_NODELIST=$NODELIST
+        export PSUBMIT_NODELIST="$NODELIST"
         ;;
     lsf)
         local NODELIST=""
@@ -121,7 +122,7 @@ function psub_get_nodelist {
         export PSUBMIT_NODELIST=$NODELIST
         ;;
     esac
-
+    set +f
 }
 
 while getopts ":w:t:i:n:p:d:o:a:x" opt; do

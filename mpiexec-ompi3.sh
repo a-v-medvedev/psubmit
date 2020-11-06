@@ -33,11 +33,12 @@ else
 #    echo ">>> PSUBMIT: ldd:"
 #    ldd $(which $TARGET_BIN)
     
+    time2=$(date +"%s");
     echo $- | grep -q x && omit_setx=true || set -x
     mpirun $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
 
-    time2=$(date +"%s");
-    [ "$(expr $time2 - $time1)" -lt "2" ] && sleep $(expr 2 - $time2 + $time1)
-
+    walltime=$(expr $time3 - $time2)
+    [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
+    echo ">>> PSUBMIT: Walltime: $walltime"
 fi
