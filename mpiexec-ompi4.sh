@@ -35,7 +35,8 @@ else
     
     time2=$(date +"%s");
     echo $- | grep -q x && omit_setx=true || set -x
-    mpirun -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" -mca pml ucx -mca btl ^vader,tcp,openib --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
+    mpirun -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
+    # for modern ucx-based: add: -mca pml ucx -mca btl ^vader,tcp,openib 
     [ -z "$omit_setx" ] && set +x
 
     time3=$(date +"%s");

@@ -23,6 +23,8 @@ else
     
     [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 
+    export I_MPI_HYDRA_BOOTSTRAP="ssh"
+
     time2=$(date +"%s")
     echo $- | grep -q x && omit_setx=true || set -x;
     mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$TARGET_BIN" $ALL_ARGS
