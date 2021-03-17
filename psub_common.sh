@@ -82,26 +82,27 @@ function psub_common_make_stackfile() {
     if [ -d "$dir/results.$jobid_short/out.$jobid_short" ]; then
 		stackdir="$dir/results.$jobid_short"
 	fi
-	rm -f __result __stack
-	touch __stack
+	rm -f __result.$jobid_short __stack.$jobid_short
+	touch __stack.$jobid_short
 	rm -f stacktrace.$jobid_short
 	for f in $(find "$stackdir" -type f); do
 		local ST
-        egrep "(: Assertion .* failed.)" $f >> __result && ST=1
+        egrep "(: Assertion .* failed.)" $f >> __result.$jobid_short && ST=1
         if [ -z "$ST" ]; then
-    		egrep "(>> TIMEOUT)|(>> FATAL SIGNAL: [0-9]*)|(>> EXCEPTION)" $f >> __result && ST=1;
+    		egrep "(>> TIMEOUT)|(>> FATAL SIGNAL: [0-9]*)|(>> EXCEPTION)" $f >> __result.$jobid_short && ST=1;
         fi
 		if [ ! -z "$ST" ]; then 
             if grep -q 'Stack trace:' $f ; then
-			    echo "File: $f" >> __stack
-			    echo "" >> __stack
-			    cat $f | awk '/Stack trace:/{STAT=1} /-------------------------------------------/{ if (STAT==2) STAT=3; if (STAT==1) STAT=2; } STAT>0 { print; if (STAT==3) STAT=0 }' >> __stack 
-                echo "" >> __stack
+			    echo "File: $f" >> __stack.$jobid_short
+			    echo "" >> __stack.$jobid_short
+			    cat $f | awk '/Stack trace:/{STAT=1} /-------------------------------------------/{ if (STAT==2) STAT=3; if (STAT==1) STAT=2; } STAT>0 { print; if (STAT==3) STAT=0 }' >> __stack.$jobid_short 
+                echo "" >> __stack.$jobid_short
             fi
 		fi
 	done
-	if [ -f __result ]; then
-		local R=$(sort -u < __result | head -n1)
+    local lines=$(wc -l __result.$jobid_short | cut -d' ' -f1)
+	if [ "$lines" != "0" ]; then
+		local R=$(sort -u < __result.$jobid_short | head -n1)
 		case "$R" in
 			*">> T"*) echo -ne ">> STATUS: TIMEOUT\n\n" >> stacktrace.$jobid_short;;
 			*">> E"*) echo -ne ">> STATUS: EXCEPTION\n\n" >> stacktrace.$jobid_short;;
@@ -111,8 +112,8 @@ function psub_common_make_stackfile() {
 		esac
 		echo "$R" >> stacktrace.$jobid_short
 		echo >> stacktrace.$jobid_short
-		cat __stack >> stacktrace.$jobid_short
-		rm -f __result __stack
+		cat __stack.$jobid_short >> stacktrace.$jobid_short
+		rm -f __result.$jobid_short __stack.$jobid_short
 		mv stacktrace.$jobid_short $dir/results.$jobid_short
 	fi
 }
