@@ -83,6 +83,7 @@ check_bash_func_declared psub_submit
 check_bash_func_declared psub_set_paths
 check_bash_func_declared psub_set_outfiles
 check_bash_func_declared psub_move_outfiles
+check_bash_func_declared psub_make_stackfile
 check_bash_func_declared psub_cleanup
 check_bash_func_declared psub_check_job_status
 check_bash_func_declared psub_check_job_done
@@ -131,5 +132,6 @@ do
 done
 
 psub_move_outfiles
+psub_make_stackfile
 
 

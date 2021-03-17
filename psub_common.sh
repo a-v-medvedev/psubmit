@@ -56,10 +56,6 @@ function psub_common_move_outfiles() {
         fi
         errfiles="TRUE"
     fi
-    r=$(ls -1 $home/stack.* 2> /dev/null)
-    if [ "$r" != "" ]; then
-        mv  $home/stack.* $dir/results.$jobid_short
-    fi
     r=$(ls -1 $dir/*.${jobid_short}.* 2> /dev/null)
     if [ "$r" != "" ]; then
         mv  $dir/*.${jobid_short}.* $dir/results.$jobid_short
@@ -78,6 +74,47 @@ function psub_common_move_outfiles() {
         [ -z "$erank0" ] || ( echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $dir/results.$jobid_short/erank0 )
         [ -z "$errfiles" ] || ( echo -ne "\n--- NOTE: THERE ARE ERROR OUTPUT FILES\n" && cat $dir/results.$jobid_short/err.$jobid_short.* | head )
     fi
+}
+
+function psub_common_make_stackfile() {
+    local dir="$SCRATCH_PWD"
+	local stackdir=$dir/results.$jobid_short
+    if [ -d "$dir/results.$jobid_short/out.$jobid_short" ]; then
+		stackdir="$dir/results.$jobid_short"
+	fi
+	rm -f __result __stack
+	touch __stack
+	rm -f stacktrace.$jobid_short
+	for f in $(find "$stackdir" -type f); do
+		local ST
+        egrep "(: Assertion .* failed.)" $f >> __result && ST=1
+        if [ -z "$ST" ]; then
+    		egrep "(>> TIMEOUT)|(>> FATAL SIGNAL: [0-9]*)|(>> EXCEPTION)" $f >> __result && ST=1;
+        fi
+		if [ ! -z "$ST" ]; then 
+            if grep -q 'Stack trace:' $f ; then
+			    echo "File: $f" >> __stack
+			    echo "" >> __stack
+			    cat $f | awk '/Stack trace:/{STAT=1} /-------------------------------------------/{ if (STAT==2) STAT=3; if (STAT==1) STAT=2; } STAT>0 { print; if (STAT==3) STAT=0 }' >> __stack 
+                echo "" >> __stack
+            fi
+		fi
+	done
+	if [ -f __result ]; then
+		local R=$(sort -u < __result | head -n1)
+		case "$R" in
+			*">> T"*) echo -ne ">> STATUS: TIMEOUT\n\n" >> stacktrace.$jobid_short;;
+			*">> E"*) echo -ne ">> STATUS: EXCEPTION\n\n" >> stacktrace.$jobid_short;;
+			*">> F"*) echo -ne ">> STATUS: CRASH\n\n" >> stacktrace.$jobid_short;;
+			*": As"*) echo -ne ">> STATUS: ASSERT\n\n" >> stacktrace.$jobid_short;;
+			*) echo -ne "STATUS: ???\n\n" >> stacktrace.$jobid_short;;
+		esac
+		echo "$R" >> stacktrace.$jobid_short
+		echo >> stacktrace.$jobid_short
+		cat __stack >> stacktrace.$jobid_short
+		rm -f __result __stack
+		mv stacktrace.$jobid_short $dir/results.$jobid_short
+	fi
 }
 
 function psub_common_cleanup() {

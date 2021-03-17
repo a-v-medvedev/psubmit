@@ -72,6 +72,10 @@ psub_move_outfiles() {
     psub_common_move_outfiles
 }
 
+function psub_make_stackfile() {
+    psub_common_make_stackfile
+}
+
 psub_cleanup() {
     psub_common_cleanup
 }

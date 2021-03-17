@@ -15,7 +15,7 @@ NUL="0"
 if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
     echo "$dir/1/rank.$NUL/stdout"
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
-    echo "$dir/1/rank.$NUL/stdout"
+    echo "$dir/1/rank.$NUL/stderr"
 else
 
     [ "$ALL_ARGS" == "--" ] && ALL_ARGS=""

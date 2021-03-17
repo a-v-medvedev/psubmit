@@ -8,7 +8,7 @@ ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
 if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
     echo "out.$PSUBMIT_JOBID.0"
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
-    echo "out.$PSUBMIT_JOBID.0"
+    echo "err.$PSUBMIT_JOBID.0"
 else
 
 	[ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"

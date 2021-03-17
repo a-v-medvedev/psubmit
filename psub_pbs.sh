@@ -61,6 +61,10 @@ psub_move_outfiles() {
     [ -z "$PBSFILE" ] || rm -f $PBSFILE
 }
 
+function psub_make_stackfile() {
+    psub_common_make_stackfile
+}
+
 psub_cleanup() {
     psub_common_cleanup 
     [ -z "$PBSFILE" ] || rm -f $PBSFILE

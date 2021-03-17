@@ -15,7 +15,7 @@ NUL="0"
 if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
     echo "$dir/1/rank.$NUL/stdout"
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
-    echo "$dir/1/rank.$NUL/stdout"
+    echo "$dir/1/rank.$NUL/stderr"
 else
 
     [ "$ALL_ARGS" == "--" ] && ALL_ARGS=""
@@ -38,7 +38,8 @@ else
     mpirun $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
 
+    time3=$(date +"%s")
     walltime=$(expr $time3 - $time2)
-    [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
+    [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 '+' $time1)
     echo ">>> PSUBMIT: Walltime: $walltime"
 fi
