@@ -113,9 +113,9 @@ function psub_common_make_stackfile() {
 		echo "$R" >> stacktrace.$jobid_short
 		echo >> stacktrace.$jobid_short
 		cat __stack.$jobid_short >> stacktrace.$jobid_short
-		rm -f __result.$jobid_short __stack.$jobid_short
 		mv stacktrace.$jobid_short $dir/results.$jobid_short
 	fi
+	rm -f __result.$jobid_short __stack.$jobid_short
 }
 
 function psub_common_cleanup() {
