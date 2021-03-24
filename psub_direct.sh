@@ -7,7 +7,7 @@ DIRECT_JOB_PID=""
 function psub_check_job_status() {
     if [ "$jobstatus" == "Q" ]; then
         local np=$(expr "$NNODES" \* "$PPN")
-        /usr/sbin/daemonize -EPATH=$PATH -ELD_LIBRARY_PATH=$LD_LIBRARY_PATH -c $PWD -p "$DIRECT_JOB_PID" -o ${FILE_OUT} $(which timeout) ${TIME_LIMIT}m -k 10s "$PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh" -t direct -i "$jobid_short" -n "$np" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" >& "$OUTFILE"
+        /usr/sbin/daemonize -EPATH=$PATH -ELD_LIBRARY_PATH=$LD_LIBRARY_PATH -c $PWD -p "$DIRECT_JOB_PID" -o ${FILE_OUT} $(which timeout) -k10s ${TIME_LIMIT}m "$PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh" -t direct -i "$jobid_short" -n "$np" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" >& "$OUTFILE"
         cat $OUTFILE
         grep -q 'Is another instance running' "$OUTFILE"
         if [ "$?" == "0" ]; then jobstatus="Q"; return 1;
