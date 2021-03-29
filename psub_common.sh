@@ -58,7 +58,10 @@ function psub_common_move_outfiles() {
     fi
     r=$(ls -1 $dir/*.${jobid_short}.* 2> /dev/null)
     if [ "$r" != "" ]; then
-        mv  $dir/*.${jobid_short}.* $dir/results.$jobid_short
+        for f in $r; do
+            x=$(echo $f | grep '^[^.]*\.'${jobid_short}'\.[^.]*$')
+            [ -z "$x" ] || mv "$f" $dir/results.$jobid_short
+        done
     fi
     echo "Results collected:" "results.${jobid_short}/"
     [ -z "$rank0" ] || echo "Rank 0 output:" results.$jobid_short/rank0
