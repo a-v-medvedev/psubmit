@@ -46,7 +46,6 @@ INIT_COMMANDS=""
 INJOB_INIT_COMMANDS=""
 TARGET_BIN="hostname"
 MPIEXEC="generic"
-#MPIEXEC=./mpiexec-generic.sh
 BATCH="slurm"
 
 if [ -f "$OPTSCRIPT" ]; then
