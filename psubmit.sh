@@ -127,7 +127,7 @@ do
     if [ "$jobstatus" == "C" ]; then psub_check_job_done; break; fi
     if [ "$jobstatus" == "DONE" ]; then break; fi
     if [ "$jobstatus" == "E" ]; then psub_check_job_done; break; fi
-    sleep 1
+    sleep 0.1
 done
 
 psub_move_outfiles
