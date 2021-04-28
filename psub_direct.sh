@@ -4,6 +4,8 @@
 
 DIRECT_JOB_PID=""
 DIRECT_LOCKFILE=""
+DIRECT_OVERSUBSCRIBE_LEVEL=1
+[ -z "$PSUBMIT_OPTS_DIRECT_OVERSUBSCRIBE_LEVEL" ] || DIRECT_OVERSUBSCRIBE_LEVEL=$PSUBMIT_OPTS_DIRECT_OVERSUBSCRIBE_LEVEL
 
 function psub_check_job_status() {
     if [ "$jobstatus" == "Q" ]; then
@@ -15,7 +17,6 @@ function psub_check_job_status() {
             rm -f "$OUTFILE"; 
             return 1;
         else 
-            echo $jobid > "$DIRECT_LOCKFILE"; 
             local pid=$(cat "$DIRECT_JOB_PID")
             local isnumber=$(expr "$pid" "+" "0" 2> /dev/null)
             if [ ! -z "$isnumber" -a "$isnumber" == "$pid" ]; then
@@ -65,16 +66,30 @@ function psub_submit() {
     rm -f "$OUTFILE"
     DIRECT_JOB_PID=`mktemp -u .XXXXXXX.pid`
     rm -f $DIRECT_JOB_PID
-    DIRECT_LOCKFILE=$PSUBMIT_DIRNAME/direct-run.lock
+    local tag=$(echo "$RANDOM%$DIRECT_OVERSUBSCRIBE_LEVEL+1" | bc)
+    DIRECT_LOCKFILE=$PSUBMIT_DIRNAME/direct-run-${tag}.lock
+    local mult=1000000
+    [ "$DIRECT_OVERSUBSCRIBE_LEVEL" == 1 ] && mult=1
+    local startid=$(echo "$tag*$mult" | bc)
     if [ -f "$DIRECT_LOCKFILE" ]; then
-        jobid=$(cat "$DIRECT_LOCKFILE")
-        expr "$jobid" \+ 1 >& /dev/null || jobid=0 && true
-        jobid=$(expr "$jobid" \+ 1)
-        #echo $jobid > "$DIRECT_LOCKFILE"
+        (
+            flock -e 9
+            jobid=$(cat "$DIRECT_LOCKFILE")
+            expr "$jobid" \+ 1 >& /dev/null || jobid=$startid && true
+            jobid=$(expr "$jobid" \+ 1)
+            echo $jobid > "$DIRECT_LOCKFILE"
+            echo $jobid > $OUTFILE
+        ) 9<"$DIRECT_LOCKFILE"
     else
-        jobid=0
-        echo 0 > "$DIRECT_LOCKFILE"
+        touch "$DIRECT_LOCKFILE"
+        (
+            flock -n 9 || exit 1
+            jobid=$startid
+            echo $startid > "$DIRECT_LOCKFILE"
+            echo $jobid > $OUTFILE
+        ) 9<"$DIRECT_LOCKFILE" || echo X$startid > $OUTFILE 
     fi
+    jobid=$(cat $OUTFILE)
     jobstatus="Q"
     export jobid
     jobid_short=$jobid
