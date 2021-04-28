@@ -87,7 +87,7 @@ function psub_submit() {
             jobid=$startid
             echo $startid > "$DIRECT_LOCKFILE"
             echo $jobid > $OUTFILE
-        ) 9<"$DIRECT_LOCKFILE" || echo X$startid > $OUTFILE 
+        ) 9<"$DIRECT_LOCKFILE" || echo 1$startid > $OUTFILE 
     fi
     jobid=$(cat $OUTFILE)
     jobstatus="Q"
