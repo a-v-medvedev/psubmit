@@ -96,7 +96,7 @@ function psub_submit() {
     export jobid_short
     local np=$(expr "$NNODES" \* "$PPN")
     rm -f hostfile.$jobid_short
-    for i in `seq 0 1 $np`; do
+    for i in `seq 1 1 $np`; do
         echo "localhost" >> hostfile.$jobid_short
     done
 }
