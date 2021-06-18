@@ -5,6 +5,7 @@ time1=$(date +"%s")
 
 ALL_ARGS=$(eval echo '' $*)
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
+ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_NP%/$PSUBMIT_NP/g")
 
 NUL="0"
 [ "$PSUBMIT_NP" -gt 10 ] && NUL="00"

@@ -4,6 +4,7 @@
 
 ALL_ARGS=$(eval echo '' $*)
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
+ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_NP%/$PSUBMIT_NP/g")
 
 if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
     echo "out.$PSUBMIT_JOBID.0"
