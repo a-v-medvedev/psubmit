@@ -1,13 +1,12 @@
 #!/bin/bash
 
 if [ -z "$1" -o -z "$2" ]; then echo "Usage: " $(basename $0) "-n NUM_NODES -p PROC_PER_NODE [-o options_file] [-a args]"; exit 1; fi
-
 NNODES=1
 PPN=1
 OPTSCRIPT=./psubmit.opt
 ARGS=""
 
-while getopts ":n:p:o:a:x" opt; do
+while getopts ":n:p:o:a:b:f:x" opt; do
   case $opt in
     n)
       NNODES=$OPTARG
@@ -23,6 +22,12 @@ while getopts ":n:p:o:a:x" opt; do
       ;;
     x)
       PSUBMIT_DBG="ON" 
+      ;;
+    b) 
+      export PSUBMIT_PREPROC="$OPTARG"
+      ;;
+    f) 
+      export PSUBMIT_POSTPROC="$OPTARG"
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
