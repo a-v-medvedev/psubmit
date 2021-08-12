@@ -23,9 +23,9 @@ function psub_common_move_outfiles() {
     local rank0=""
     local erank0=""
     local errfiles=""
-    local r=$(ls -1 $dir/out.$jobid_short* 2> /dev/null)
+    local r=$(ls -1 $dir/out.$jobid_short.* 2> /dev/null)
     if [ "$r" != "" ]; then
-        mv $dir/out.$jobid_short* $dir/results.$jobid_short
+        mv $dir/out.${jobid_short}.* $dir/results.$jobid_short
         PSUBMIT_NP=$(expr $NNODES \* $PPN)
         PSUBMIT_JOBID=$jobid_short
         local f=$(. "$MPIEXEC" --show-rank0-out)
@@ -39,9 +39,9 @@ function psub_common_move_outfiles() {
             fi
         fi
     fi
-    r=$(ls -1 $dir/err.$jobid_short* 2> /dev/null)
+    r=$(ls -1 $dir/err.$jobid_short.* 2> /dev/null)
     if [ "$r" != "" ]; then
-        mv $dir/err.$jobid_short* $dir/results.$jobid_short
+        mv $dir/err.$jobid_short.* $dir/results.$jobid_short
         PSUBMIT_NP=$(expr $NNODES \* $PPN)
         PSUBMIT_JOBID=$jobid_short
         f=$(. "$MPIEXEC" --show-rank0-err)
