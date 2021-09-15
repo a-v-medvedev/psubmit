@@ -59,9 +59,9 @@ function psub_common_move_outfiles() {
     r=$(ls -1 $dir/*.${jobid_short}.* $dir/*.${jobid_short} 2> /dev/null)
     if [ "$r" != "" ]; then
         for f in $r; do
-            x=$(echo $f | grep '^[^.]*\.'${jobid_short}'\.[^.]*$')
+            x=$(basename $f | grep '^[^.]*\.'${jobid_short}'\.[^.]*$')
             [ -z "$x" ] || mv "$f" $dir/results.$jobid_short
-            x=$(echo $f | grep '^[^.]*\.'${jobid_short}'$')
+            x=$(basename $f | grep '^[^.]*\.'${jobid_short}'$')
             [ -z "$x" ] || mv "$f" $dir/results.$jobid_short
         done
     fi
