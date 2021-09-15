@@ -17,13 +17,13 @@ function psub_common_move_outfiles() {
     local dir="$SCRATCH_PWD"
     local home="$SCRATCH_HOME"
     mkdir -p $dir/results.$jobid_short
-    mv $FILE_OUT $dir/results.$jobid_short
-    mv psubmit_wrapper_output.$jobid_short $dir/results.$jobid_short
+    [ -f $FILE_OUT ] && mv $FILE_OUT $dir/results.$jobid_short
+    [ -f psubmit_wrapper_output.$jobid_short ] && mv psubmit_wrapper_output.$jobid_short $dir/results.$jobid_short
     [ -f hostfile.$jobid_short ] && mv hostfile.$jobid_short $dir/results.$jobid_short
     local rank0=""
     local erank0=""
     local errfiles=""
-    local r=$(ls -1 $dir/out.$jobid_short.* 2> /dev/null)
+    local r=$(ls -1d $dir/out.$jobid_short.* 2> /dev/null)
     if [ "$r" != "" ]; then
         mv $dir/out.${jobid_short}.* $dir/results.$jobid_short
         PSUBMIT_NP=$(expr $NNODES \* $PPN)
@@ -39,7 +39,7 @@ function psub_common_move_outfiles() {
             fi
         fi
     fi
-    r=$(ls -1 $dir/err.$jobid_short.* 2> /dev/null)
+    r=$(ls -1d $dir/err.$jobid_short.* 2> /dev/null)
     if [ "$r" != "" ]; then
         mv $dir/err.$jobid_short.* $dir/results.$jobid_short
         PSUBMIT_NP=$(expr $NNODES \* $PPN)
@@ -56,13 +56,15 @@ function psub_common_move_outfiles() {
         fi
         errfiles="TRUE"
     fi
-    r=$(ls -1 $dir/*.${jobid_short}.* $dir/*.${jobid_short} 2> /dev/null)
+    r=$(ls -1d $dir/*.${jobid_short}.* $dir/*.${jobid_short} 2> /dev/null)
     if [ "$r" != "" ]; then
         for f in $r; do
             x=$(basename $f | grep '^[^.]*\.'${jobid_short}'\.[^.]*$')
             [ -z "$x" ] || mv "$f" $dir/results.$jobid_short
             x=$(basename $f | grep '^[^.]*\.'${jobid_short}'$')
-            [ -z "$x" ] || mv "$f" $dir/results.$jobid_short
+            if [ "$x" != "results.$jobid_short" ]; then
+                [ -z "$x" ] || mv "$f" $dir/results.$jobid_short
+            fi
         done
     fi
     echo "Results collected:" "results.${jobid_short}/"
