@@ -44,12 +44,17 @@ psub_submit() {
     local resources=""
     [ -z "$NODETYPE" ] || resources="--gres=$NODETYPE"
     local blacklist=""
-    [ -z "$PSUBMIT_BLACKLIST" ] || blacklist="--exclude $PSUBMIT_BLACKLIST"
-    local blacklist=""
-    [ -z "$PSUBMIT_WHITELIST" ] || whitelist="-w $PSUBMIT_WHITELIST"
+    [ -z "$BLACKLIST" ] || blacklist="--exclude $BLACKLIST"
+    local whitelist=""
+    [ -z "$WHITELIST" ] || whitelist="-w $WHITELIST"
+    local account=""
+    [ -z "$ACCOUNT" ] || account="--account=$ACCOUNT"
+    local comment=""
+    [ -z "$COMMENT" ] || comment="--comment=$COMMENT"
+
     echo $- | grep -q x && xopt="-x"
     [ -z "$JOB_NAME" ] && JOB_NAME=$(basename "$TARGET_BIN")
-    sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources $blackist $whitelist -D "$PWD" -N "$NNODES" -n "$n" -p "$QUEUE" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" $xopt -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
+    sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources $blackist $whitelist $account $comment -D "$PWD" -N "$NNODES" -n "$n" -p "$QUEUE" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" $xopt -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
     grep "Batch job submission failed" "$outfile" && exit 0
     local pattern="Submitted batch job "
     grep -q "$pattern" "$outfile"
