@@ -21,7 +21,7 @@ function psub_common_move_outfiles() {
         mv $FILE_OUT $dir/results.$jobid_short
         oldpwd=$(pwd)
         cd $dir/
-        ln -s $(basename $FILE_OUT) batch.out
+        ln -s $(basename $FILE_OUT) batch.${jobid_short}.out
         cd $oldpwd
     fi
     [ -f psubmit_wrapper_output.$jobid_short ] && mv psubmit_wrapper_output.$jobid_short $dir/results.$jobid_short
