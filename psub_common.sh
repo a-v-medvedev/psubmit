@@ -17,7 +17,13 @@ function psub_common_move_outfiles() {
     local dir="$SCRATCH_PWD"
     local home="$SCRATCH_HOME"
     mkdir -p $dir/results.$jobid_short
-    [ -f $FILE_OUT ] && mv $FILE_OUT $dir/results.$jobid_short
+    if [ -f $FILE_OUT ]; then 
+        mv $FILE_OUT $dir/results.$jobid_short
+        oldpwd=$(pwd)
+        cd $dir/
+        ln -s $(basename $FILE_OUT) batch.out
+        cd $oldpwd
+    fi
     [ -f psubmit_wrapper_output.$jobid_short ] && mv psubmit_wrapper_output.$jobid_short $dir/results.$jobid_short
     [ -f hostfile.$jobid_short ] && mv hostfile.$jobid_short $dir/results.$jobid_short
     local rank0=""
