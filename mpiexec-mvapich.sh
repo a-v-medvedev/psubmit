@@ -16,6 +16,10 @@ else
 
     # The line below is to cut off CUDA from the environment
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
+
+    export PSUBMIT_JOBID PSUBMIT_NP
+    [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
+
     
     echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
     echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)

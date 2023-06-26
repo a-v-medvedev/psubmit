@@ -21,7 +21,10 @@ else
     echo ">>> PSUBMIT: Executable is: " $(which $TARGET_BIN)
 #    echo ">>> PSUBMIT: ldd:"
 #    ldd $(which $TARGET_BIN)
-    
+
+    export PSUBMIT_JOBID PSUBMIT_NP
+    [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
+
     [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 
     export I_MPI_HYDRA_BOOTSTRAP="ssh"
@@ -35,4 +38,6 @@ else
     walltime="$(expr $time3 - $time2)"
     [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
     echo ">>> PSUBMIT: Walltime: $walltime"
+
+    [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC    
 fi
