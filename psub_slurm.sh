@@ -4,7 +4,9 @@
 
 psub_check_job_status() {
     [ "$jobstatus" == "DONE" ] && return
-    queue_out=$(squeue -p "$QUEUE" 2>&1 | grep "$jobid_short")
+    local queue_flag=""
+    [ -z "$QUEUE" ] || queue_flag="-p $QUEUE"
+    queue_out=$(squeue $queue_flag 2>&1 | grep "$jobid_short")
     if [ -z "$queue_out" -a ! -f "$FILE_OUT" ]; then echo "JOB DISAPPEARED!"; jobstatus="NONE"; return; fi
     jobstatus=$(echo $queue_out | awk '{print $5}')
     if [ -z "$jobstatus" ]; then
@@ -42,7 +44,15 @@ psub_submit() {
     rm -f "$outfile"
     n=$(expr "$NNODES" \* "$PPN")
     local resources=""
-    [ -z "$NODETYPE" ] || resources="--gres=$NODETYPE"
+    if [ -z "$RESOURCE_HANDLING" -o "$RESOURCE_HANDLING" == "gres" ]; then
+        [ -z "$NODETYPE" ] || resources="--gres=$NODETYPE"
+    elif [ "$RESOURCE_HANDLING" == "qos" ]; then
+        [ -z "$NODETYPE" ] || resources="--qos=$NODETYPE"
+    else
+        # unknown case 
+        echo ">> FATAL: psub_submit(): unknown RESOURCE_HANDLING value."
+        return
+    fi
     local blacklist=""
     [ -z "$BLACKLIST" ] || blacklist="--exclude $BLACKLIST"
     local whitelist=""
@@ -51,10 +61,12 @@ psub_submit() {
     [ -z "$ACCOUNT" ] || account="--account=$ACCOUNT"
     local comment=""
     [ -z "$COMMENT" ] || comment="--comment=$COMMENT"
+    local queue_flag=""
+    [ -z "$QUEUE" ] || queue_flag="-p $QUEUE"
 
     echo $- | grep -q x && xopt="-x"
     [ -z "$JOB_NAME" ] && JOB_NAME=$(basename "$TARGET_BIN")
-    sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources $blackist $whitelist $account $comment -D "$PWD" -N "$NNODES" -n "$n" -p "$QUEUE" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" $xopt -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
+    sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources $blackist $whitelist $account $comment $queue_flag -D "$PWD" -N "$NNODES" -n "$n" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" $xopt -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
     grep "Batch job submission failed" "$outfile" && exit 0
     local pattern="Submitted batch job "
     grep -q "$pattern" "$outfile"
