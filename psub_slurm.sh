@@ -6,9 +6,9 @@ psub_check_job_status() {
     [ "$jobstatus" == "DONE" ] && return
     local queue_flag=""
     [ -z "$QUEUE" ] || queue_flag="-p $QUEUE"
-    queue_out=$(squeue $queue_flag 2>&1 | grep "$jobid_short")
+    queue_out=$(squeue -o "%A %t" $queue_flag 2>&1 | grep "$jobid_short")
     if [ -z "$queue_out" -a ! -f "$FILE_OUT" ]; then echo "JOB DISAPPEARED!"; jobstatus="NONE"; return; fi
-    jobstatus=$(echo $queue_out | awk '{print $5}')
+    jobstatus=$(echo $queue_out | awk '{print $2}')
     if [ -z "$jobstatus" ]; then
         psub_check_job_done
 		[ "$jobdone" == "1" ] && return
