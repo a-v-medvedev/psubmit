@@ -15,8 +15,8 @@ else
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
     [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
     echo $- | grep -q x && omit_setx=true || set -x;
-    OMP_NUM_THREADS="$PSUBMIT_TPN"
-    srun --ntasks-per-node=$PSUBMIT_PPN --cpus-per-task=$PSUBMIT_TPN --output=out.%j.%t --error=err.%j.%t --input=none "$TARGET_BIN" $ALL_ARGS >& out.$PSUBMIT_JOBID.master
+    #OMP_NUM_THREADS="$PSUBMIT_TPN"
+    srun --cpu-bind=no --gpus-per-node=8 --ntasks-per-node=$PSUBMIT_PPN --output=out.%j.%t --error=err.%j.%t --input=none "$TARGET_BIN" $ALL_ARGS >& out.$PSUBMIT_JOBID.master
     [ -z "$omit_setx" ] && set +x
 
     [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
