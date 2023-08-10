@@ -1,6 +1,7 @@
 QUEUE=test                # queue name
 #QUEUE_SUFFIX=""          # PBS-specific: often queue name has suffix in PBS
 #NODETYPE=                # sometimes is required to denote partitions or specific resources in slurm
+PPN=1
 TIME_LIMIT="10"           # in minutes
 TARGET_BIN="hostname"     # binary to run which mpirun/mpiexec, full path, "./" as a path normally works
 JOB_NAME="my_testjob"     # default is: "$TARGET_BIN"
