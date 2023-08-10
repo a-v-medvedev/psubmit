@@ -1,18 +1,25 @@
 #!/bin/bash
 
-if [ -z "$1" -o -z "$2" ]; then echo "Usage: " $(basename $0) "-n NUM_NODES -p PROC_PER_NODE [-o options_file] [-a args]"; exit 1; fi
+function usage() {
+    echo "Usage: " $(basename $0) "-n NUM_NODES [-p PROC_PER_NODE] [-o options_file] [-a args] [-e executable_bunary] [-x] [-b preproc_script] [-f postproc_script]"; exit 1;
+}
+
+if [ -z "$1" ]; then usage; fi
 NNODES=1
-PPN=1
+PPN="-"
 OPTSCRIPT=./psubmit.opt
 ARGS=""
 
-while getopts ":n:p:o:a:b:f:x" opt; do
+while getopts ":n:p:o:a:b:f:e:x" opt; do
   case $opt in
     n)
       NNODES=$OPTARG
       ;;
     p)
-      PPN=$OPTARG
+      PPN_CMDLINE=$OPTARG
+      ;;
+    e)
+      TARGET_BIN_CMDLINE=$OPTARG
       ;;
     o)
       OPTSCRIPT=$OPTARG
@@ -31,16 +38,15 @@ while getopts ":n:p:o:a:b:f:x" opt; do
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
-      exit 1
+      usage
       ;;
     :)
       echo "Option -$OPTARG requires an argument." >&2
-      exit 1
+      usage
       ;;
   esac
 done
 
-n=`expr $NNODES \* $PPN`
 
 PSUBMIT_DIRNAME=$(cd $(dirname "$0") && pwd -P)
 
@@ -60,13 +66,24 @@ else
     exit 1
 fi
 
+[ -z "$PPN_CMDLINE" ] || PPN="$PPN_CMDLINE"
+[ -z "$TARGET_BIN_CMDLINE" ] || TARGET_BIN="$TARGET_BIN_CMDLINE"
+export TARGET_BIN
+
+if [ "$PPN" == "-" ]; then
+    echo "FATAL: PPN is not defined neither in command line nor in opts file"
+    exit 1
+fi
+
+n=$(expr $NNODES \* $PPN)
+
 export MPIEXEC=$PSUBMIT_DIRNAME/mpiexec-${MPIEXEC}.sh
 export BATCH=$PSUBMIT_DIRNAME/psub_${BATCH}.sh
 
 if [ -f "$BATCH" ]; then
     . "$BATCH"
 else
-    echo "Cannot open batch system script:" "$BATCH"
+    echo "FATAL: Cannot open batch system script:" "$BATCH"
     exit 1
 fi
 

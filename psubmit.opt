@@ -7,5 +7,5 @@ JOB_NAME="my_testjob"     # default is: "$TARGET_BIN"
 INIT_COMMANDS=''          # execuled with eval before job submit
 INJOB_INIT_COMMANDS=''    # execuled with eval before mpirun
 
-MPIEXEC="impi"            # options: impi, impixtmp, ompi1, ompi3, mvapich
-BATCH="slurm"             # options: slurm, pbs, lsf, vbbs, direct
+MPIEXEC="generic"         # options: impi, impixtmp, ompi1, ompi3, mvapich
+BATCH="direct"            # options: slurm, pbs, lsf, vbbs, direct

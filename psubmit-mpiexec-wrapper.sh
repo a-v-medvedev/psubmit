@@ -125,7 +125,7 @@ function psub_get_nodelist {
     set +f
 }
 
-while getopts ":w:t:i:n:p:d:o:a:x" opt; do
+while getopts ":w:t:i:n:p:d:e:o:a:x" opt; do
   case $opt in
     t) export PSUBMIT_BATCH_TYPE="$OPTARG"
       ;;
@@ -136,6 +136,8 @@ while getopts ":w:t:i:n:p:d:o:a:x" opt; do
     n) export PSUBMIT_NP="$OPTARG"
       ;;
     d) export PSUBMIT_DIRNAME="$OPTARG"
+      ;;
+    e) TARGET_BIN_CMDLINE="$OPTARG"
       ;;
     o) OPTIONSFILE="$OPTARG"
       ;;
@@ -160,13 +162,14 @@ exec 2>&1
 
 info "PWD=$PWD"
 
-TARGET_BIN="hostname"
 MPIEXEC="generic"
 BATCH="slurm"
 
 if [ -f "$OPTIONSFILE" ]; then
 . "$OPTIONSFILE"
 fi
+
+export TARGET_BIN="$TARGET_BIN_CMDLINE"
 
 export MPIEXEC=$PSUBMIT_DIRNAME/mpiexec-${MPIEXEC}.sh
 export BATCH=$PSUBMIT_DIRNAME/psub_${BATCH}.sh
