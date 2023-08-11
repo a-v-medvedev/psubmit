@@ -75,6 +75,10 @@ if [ "$PPN" == "-" ]; then
     exit 1
 fi
 
+[ -z "$BEFORE" -a -z "$PSUBMIT_PREPROC" ] || PSUBMIT_PREPROC="$BEFORE"
+
+[ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || PSUBMIT_PREPROC="$AFTER"
+
 n=$(expr $NNODES \* $PPN)
 
 export MPIEXEC=$PSUBMIT_DIRNAME/mpiexec-${MPIEXEC}.sh
