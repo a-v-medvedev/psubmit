@@ -77,7 +77,7 @@ fi
 
 [ -z "$BEFORE" -a -z "$PSUBMIT_PREPROC" ] || PSUBMIT_PREPROC="$BEFORE"
 
-[ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || PSUBMIT_PREPROC="$AFTER"
+[ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || PSUBMIT_POSTPROC="$AFTER"
 
 n=$(expr $NNODES \* $PPN)
 
