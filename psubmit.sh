@@ -75,9 +75,9 @@ if [ "$PPN" == "-" ]; then
     exit 1
 fi
 
-[ -z "$BEFORE" -a -z "$PSUBMIT_PREPROC" ] || PSUBMIT_PREPROC="$BEFORE"
+[ -z "$BEFORE" -a -z "$PSUBMIT_PREPROC" ] || export PSUBMIT_PREPROC="$BEFORE"
 
-[ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || PSUBMIT_POSTPROC="$AFTER"
+[ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || export PSUBMIT_POSTPROC="$AFTER"
 
 n=$(expr $NNODES \* $PPN)
 

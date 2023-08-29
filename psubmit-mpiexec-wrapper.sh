@@ -18,7 +18,7 @@ function psub_env_check {
         local CHECK_NP=$PBS_NP
         local CHECK_PPN=$PBS_NUM_PPN
         local CHECK_DIRNAME=$(cd $(dirname "$0") && pwd -P)
-        PSUBMIT_JOBID=$CHECK_JOBID
+        export PSUBMIT_JOBID=$CHECK_JOBID
         [ "$CHECK_NP" != "$PSUBMIT_NP" ] && fatal "PSUBMIT_NP value is not correct"
         [ "$CHECK_PPN" != "$PSUBMIT_PPN" ] && fatal "PSUBMIT_PPN value is not correct"
         [ -z "$PSUBMIT_DIRNAME" ] && PSUBMIT_DIRNAME=$CHECK_DIRNAME
@@ -29,7 +29,7 @@ function psub_env_check {
         local CHECK_NP=$SLURM_NPROCS
         local CHECK_PPN=$(expr $SLURM_NPROCS / $SLURM_NNODES)
         local CHECK_DIRNAME=$(cd $(dirname "$0") && pwd -P)
-        PSUBMIT_JOBID=$CHECK_JOBID
+        export PSUBMIT_JOBID=$CHECK_JOBID
         [ "$CHECK_NP" != "$PSUBMIT_NP" ] && fatal "PSUBMIT_NP value is not correct"
         [ "$CHECK_PPN" != "$PSUBMIT_PPN" ] && fatal "PSUBMIT_PPN value is not correct"
         [ -z "$PSUBMIT_DIRNAME" ] && PSUBMIT_DIRNAME=$CHECK_DIRNAME
@@ -42,7 +42,7 @@ function psub_env_check {
         local CHECK_NP=0
         for n in $(sort < $LSB_DJOB_HOSTFILE | uniq); do CHECK_NNODES=$(expr "$CHECK_NNODES" \+ 1); CHECK_NP=$(expr "$CHECK_NP" \+ "$CHECK_PPN"); done
         local CHECK_DIRNAME=$(cd $(dirname "$0") && pwd -P)
-        PSUBMIT_JOBID=$CHECK_JOBID
+        export PSUBMIT_JOBID=$CHECK_JOBID
         [ "$CHECK_NP" != "$PSUBMIT_NP" ] && fatal "PSUBMIT_NP value is not correct"
         [ "$CHECK_PPN" != "$PSUBMIT_PPN" ] && fatal "PSUBMIT_PPN value is not correct"
         [ -z "$PSUBMIT_DIRNAME" ] && PSUBMIT_DIRNAME=$CHECK_DIRNAME

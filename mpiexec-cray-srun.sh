@@ -11,7 +11,7 @@ if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
     echo "err.$PSUBMIT_JOBID.0"
 else
-    [ -z "$PSUBMIT_TPN" ] && PSUBMIT_TPN=1
+    #[ -z "$PSUBMIT_TPN" ] && PSUBMIT_TPN=1
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
     [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
     echo $- | grep -q x && omit_setx=true || set -x;
