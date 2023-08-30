@@ -51,7 +51,7 @@ psub_submit() {
     [ -z "$NODETYPE" ] || select="select[$NODETYPE]";
     local span="span[ptile=$PPN]"
     n=$(expr "$NNODES" \* "$PPN")
-    bsub -q "$QUEUE" -l NMIWATCHDOG_OFF=1 -n $n -R "{$select $span}" -W 00:$TIME_LIMIT -o lsf-output.%J psubmit-mpiexec-wrapper.sh -t lsf -i $jobid_short -n "$n" -p "$PPN" -d "$PSUBMIT_DIRNAME" -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" >& "$outfile"
+    bsub -q "$QUEUE" -l NMIWATCHDOG_OFF=1 -n $n -R "{$select $span}" -W 00:$TIME_LIMIT -o lsf-output.%J psubmit-mpiexec-wrapper.sh -t lsf -i $jobid_short -n "$n" -p "$PPN" -h "$NTH" -d "$PSUBMIT_DIRNAME" -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" >& "$outfile"
     local pattern="^Job <[0-9]*> is submitted to queue <"
     grep -q "$pattern" "$outfile"
     if [ $? != "0" ]; then rm -f "$outfile"; exit 0; fi

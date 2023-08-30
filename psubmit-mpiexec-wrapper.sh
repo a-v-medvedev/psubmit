@@ -125,13 +125,15 @@ function psub_get_nodelist {
     set +f
 }
 
-while getopts ":w:t:i:n:p:d:e:o:a:x" opt; do
+while getopts ":w:t:i:n:p:h:d:e:o:a:x" opt; do
   case $opt in
     t) export PSUBMIT_BATCH_TYPE="$OPTARG"
       ;;
     i) export PSUBMIT_JOBID="$OPTARG"
       ;;
     p) export PSUBMIT_PPN="$OPTARG"
+      ;;
+    h) export PSUBMIT_NTH="$OPTARG"
       ;;
     n) export PSUBMIT_NP="$OPTARG"
       ;;

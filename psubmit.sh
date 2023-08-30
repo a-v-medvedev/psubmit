@@ -7,16 +7,20 @@ function usage() {
 if [ -z "$1" ]; then usage; fi
 NNODES=1
 PPN="-"
+NTH="1"
 OPTSCRIPT=./psubmit.opt
 ARGS=""
 
-while getopts ":n:p:o:a:b:f:e:x" opt; do
+while getopts ":n:p:t:o:a:b:f:e:x" opt; do
   case $opt in
     n)
       NNODES=$OPTARG
       ;;
     p)
       PPN_CMDLINE=$OPTARG
+      ;;
+    t) 
+      NTH_CMDLINE=$OPTARG
       ;;
     e)
       TARGET_BIN_CMDLINE=$OPTARG
@@ -67,6 +71,7 @@ else
 fi
 
 [ -z "$PPN_CMDLINE" ] || PPN="$PPN_CMDLINE"
+[ -z "$NTH_CMDLINE" ] || NTH="$NTH_CMDLINE"
 [ -z "$TARGET_BIN_CMDLINE" ] || TARGET_BIN="$TARGET_BIN_CMDLINE"
 export TARGET_BIN
 
