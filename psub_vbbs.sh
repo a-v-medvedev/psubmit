@@ -20,13 +20,19 @@ function psub_check_job_status() {
             done
             export PSUBMIT_NODELIST=`echo $PSUBMIT_NODELIST | sed 's/^,//'`
 
+            export SLURM_JOBID=$(vbbs show_slurm_id 1 | grep SLURM_JOBID | cut -f2 -d' ')
+            if [ ${SLURM_JOBID} -lt 1 ]; then
+                unset SLURM_JOBID
+            fi
+
             # ssh and start run-mpi script
-            headnode=$(head -n1 hostfile.$jobid | cut -d: -f1)
+            # headnode=$(head -n1 hostfile.$jobid | cut -d: -f1)
             NP=$(expr "$NNODES" \* "$PPN")
             cat $outfile > $FILE_OUT
 
-            # Start a background ssh session
+            # Start a background mpiexec
             timeout -k20 ${TIME_LIMIT}m $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t vbbs -i $jobid_short -n "$NP" -p "$PPN" -h "$NTH" -d "$PSUBMIT_DIRNAME" -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" > "$FILE_OUT" 2>&1 &
+            # Start a background ssh session
             #ssh $headnode export PATH=$PATH \&\& export LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \&\& export PSUBMIT_NODELIST="$PSUBMIT_NODELIST" \&\& cd "$PWD" \&\& timeout -k20 ${TIME_LIMIT}m $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t vbbs -i $jobid_short -n "$NP" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" > "$FILE_OUT" 2>&1 &
         fi
     fi
@@ -49,8 +55,9 @@ function psub_check_job_done() {
 function psub_cancel() {
 	if [ "$jobid" != "" -a "$jobcancelled" == "" ]; then
         # ssh to a node and kill
-        headnode=$(head -n1 hostfile.$jobid | cut -d: -f1)
-        ssh $headnode killall psubmit-mpiexec-wrapper.sh
+        # headnode=$(head -n1 hostfile.$jobid | cut -d: -f1)
+        # ssh $headnode killall psubmit-mpiexec-wrapper.sh
+        killall psubmit-mpiexec-wrapper.sh
         vbbs stop $jobid
 		jobcancelled="$jobid"
 	fi

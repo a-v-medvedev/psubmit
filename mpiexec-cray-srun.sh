@@ -2,6 +2,9 @@
 
 #t1=$(date +"%s")
 
+# FIXME we have to introduce this into the config file in some way
+NGPUS=8
+
 ALL_ARGS=$(eval echo '' $*)
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_NP%/$PSUBMIT_NP/g")
@@ -13,10 +16,15 @@ elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
 else
     #[ -z "$PSUBMIT_TPN" ] && PSUBMIT_TPN=1
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
-    [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+    if [ -f "hostfile.$PSUBMIT_JOBID" ]; then 
+        [ -z "$SLURM_JOBID" ] && { echo "FATAL: mpiexec-cray-srun.sh: there is a hostfile, so the SLURM_JOBID must be set!"; exit 1; }
+        sed -i 's/:.*//' "hostfile.$PSUBMIT_JOBID" 
+        machinefile="-F hostfile.$PSUBMIT_JOBID"
+        overlap="--overlap"
+    fi
     echo $- | grep -q x && omit_setx=true || set -x;
     #OMP_NUM_THREADS="$PSUBMIT_TPN"
-    srun --cpu-bind=no --gpus-per-node=8 --ntasks-per-node=$PSUBMIT_PPN --output=out.%j.%t --error=err.%j.%t --input=none "$TARGET_BIN" $ALL_ARGS >& out.$PSUBMIT_JOBID.master
+    srun $overlap $machinefile --cpu-bind=no --gpus-per-node=$NGPUS --ntasks-per-node=$PSUBMIT_PPN --output=out.$PSUBMIT_JOBID.%t --error=err.$PSUBMIT_JOBID.%t --input=none "$TARGET_BIN" $ALL_ARGS >& out.$PSUBMIT_JOBID.master
     [ -z "$omit_setx" ] && set +x
 
     [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
