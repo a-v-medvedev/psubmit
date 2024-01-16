@@ -16,7 +16,7 @@ function psub_check_job_status() {
             # make up a node list
             cat $outfile | grep 'node:' | awk -vppn=$PPN '{print $2 ":" ppn }' > hostfile.$jobid
             for n in $(cat hostfile.$jobid); do
-                PSUBMIT_NODELIST=$PSUBMIT_NODELIST,${n}:$PPN
+                PSUBMIT_NODELIST=$PSUBMIT_NODELIST,${n}
             done
             export PSUBMIT_NODELIST=`echo $PSUBMIT_NODELIST | sed 's/^,//'`
 
@@ -41,7 +41,7 @@ function psub_check_job_status() {
         if [ "$NBGJOBS" -eq "0" ]; then 
             jobstatus="DONE"
             vbbs stop $jobid
-            rm -f hostfile.$jobid
+            #rm -f hostfile.$jobid
         fi
     fi
     psub_update_oldjobstatus
