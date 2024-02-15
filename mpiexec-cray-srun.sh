@@ -23,7 +23,7 @@ else
         [ -z "$SLURM_JOBID" ] && { echo "FATAL: mpiexec-cray-srun.sh: there is a hostfile, so the SLURM_JOBID must be set!"; exit 1; }
         sed -i 's/:.*//' "hostfile.$PSUBMIT_JOBID" 
         machinefile="-F hostfile.$PSUBMIT_JOBID"
-        overlap="--overlap"
+        overlap="--overlap --jobid=$SLURM_JOBID"
     fi
 
     echo $- | grep -q x && omit_setx=true || set -x;
