@@ -1,12 +1,23 @@
 QUEUE=test                # queue name
 #QUEUE_SUFFIX=""          # PBS-specific: often queue name has suffix in PBS
-#NODETYPE=                # sometimes is required to denote partitions or specific resources in slurm
-PPN=1
+#NODETYPE=""              # SLURM-specific: sometimes is required to denote 
+                          #                 partitions or specific resources
+#RESOURCE_HANDLING="gres" # SLURM-specific: gres or qos: two options how to apply NODETYPE setting
+ACCOUNT="project_1234"    # SLURM-specific: account parameter
+PPN=1                     # MPI ranks per node
+NTH=1                     # number of OpenMP threads per rank
 TIME_LIMIT="10"           # in minutes
 TARGET_BIN="hostname"     # binary to run which mpirun/mpiexec, full path, "./" as a path normally works
 JOB_NAME="my_testjob"     # default is: "$TARGET_BIN"
 INIT_COMMANDS=''          # execuled with eval before job submit
 INJOB_INIT_COMMANDS=''    # execuled with eval before mpirun
+BEFORE="./preprocessing.sh"  # script to run before the TARGET_BIN
+AFTER="./postprocessing.sh"  # script to run after the TARGET_BIN
+BLACKLIST="n1234,n12345"     # nodes to exclude
+WHITELIST="n1234,n12345"     # nodes to use
 
 MPIEXEC="generic"         # options: impi, impixtmp, ompi1, ompi3, mvapich
 BATCH="direct"            # options: slurm, pbs, lsf, vbbs, direct
+
+
+

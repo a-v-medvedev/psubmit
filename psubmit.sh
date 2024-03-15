@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function usage() {
-    echo "Usage: " $(basename $0) "-n NUM_NODES [-p PROC_PER_NODE] [-o options_file] [-a args] [-e executable_bunary] [-x] [-b preproc_script] [-f postproc_script]"; exit 1;
+    echo "Usage: " $(basename $0) "-n NUM_NODES [-p PROC_PER_NODE] [-t NTHREADS] [-o options_file] [-a args] [-e executable_bunary] [-b preproc_script] [-f postproc_script] [-x]"; exit 1;
 }
 
 if [ -z "$1" ]; then usage; fi
