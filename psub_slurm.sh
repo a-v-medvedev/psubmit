@@ -53,6 +53,9 @@ psub_submit() {
         echo ">> FATAL: psub_submit(): unknown RESOURCE_HANDLING value."
         return
     fi
+    [ ! -z "$GENERIC_RESOURCES" -a "$RESOURCE_HANDLING" == "gres" ] && resources="$resources,$GENERIC_RESOURCES"
+    [ ! -z "$GENERIC_RESOURCES" -a "$RESOURCE_HANDLING" != "gres" ] && resources="$resources --gres=$GENERIC_RESOURCES"
+    [ ! -z "$CONSTRAINT" ] && constraint="$CONSTRAINT"
     local blacklist=""
     [ -z "$BLACKLIST" ] || blacklist="--exclude $BLACKLIST"
     local whitelist=""
@@ -66,7 +69,7 @@ psub_submit() {
 
     echo $- | grep -q x && xopt="-x"
     [ -z "$JOB_NAME" ] && JOB_NAME=$(basename "$TARGET_BIN")
-    sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources $blackist $whitelist $account $comment $queue_flag -D "$PWD" -N "$NNODES" -n "$n" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n "$n" -p "$PPN" -h "$NTH" -d "$PSUBMIT_DIRNAME" $xopt  -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
+    sbatch -J "$JOB_NAME" --exclusive --time=${TIME_LIMIT} $resources $constraint $blackist $whitelist $account $comment $queue_flag -D "$PWD" -N "$NNODES" -n "$n" $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n "$n" -p "$PPN" -h "$NTH" -d "$PSUBMIT_DIRNAME" $xopt  -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" 2>&1 | tee "$outfile"
     
     grep "Batch job submission failed" "$outfile" && exit 0
     local pattern="Submitted batch job "
