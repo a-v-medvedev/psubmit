@@ -24,7 +24,11 @@ else
     # The line below is to cut off CUDA from the environment
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
 
-    export PSUBMIT_JOBID PSUBMIT_NP
+    [ -z "$NGPUS" ] && NGPUS=0
+    [ -z "$PSUBMIT_NTH" ] && PSUBMIT_NTH=1
+    export OMP_NUM_THREADS="$PSUBMIT_NTH"
+
+    export PSUBMIT_JOBID PSUBMIT_NP PSUBMIT_NTH PSUBMIT_PPN
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
 
     [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
@@ -39,7 +43,7 @@ else
     
     time2=$(date +"%s");
     echo $- | grep -q x && omit_setx=true || set -x
-    mpirun -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
+    mpirun -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
     # for modern ucx-based: add: -mca pml ucx -mca btl ^vader,tcp,openib 
     [ -z "$omit_setx" ] && set +x
 

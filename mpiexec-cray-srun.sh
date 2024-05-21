@@ -16,8 +16,8 @@ elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
 else
     [ -z "$NGPUS" ] && NGPUS=0
     [ "$NGPUS" == "0" ] || gpuopts="--cpu-bind=no --gpus-per-node=$NGPUS"
-    [ -z "$PSUBMIT_TPN" ] && PSUBMIT_TPN=1
-    export OMP_NUM_THREADS="$PSUBMIT_TPN"
+    [ -z "$PSUBMIT_NTH" ] && PSUBMIT_NTH=1
+    export OMP_NUM_THREADS="$PSUBMIT_NTH"
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
     if [ -f "hostfile.$PSUBMIT_JOBID" ]; then 
         [ -z "$SLURM_JOBID" ] && { echo "FATAL: mpiexec-cray-srun.sh: there is a hostfile, so the SLURM_JOBID must be set!"; exit 1; }

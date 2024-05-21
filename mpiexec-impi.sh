@@ -22,8 +22,8 @@ else
 #    echo ">>> PSUBMIT: ldd:"
 #    ldd $(which $TARGET_BIN)
 
-    [ -z "$PSUBMIT_TPN" ] && PSUBMIT_TPN=1
-    export OMP_NUM_THREADS="$PSUBMIT_TPN"
+    [ -z "$PSUBMIT_NTH" ] && PSUBMIT_NTH=1
+    export OMP_NUM_THREADS="$PSUBMIT_NTH"
 
     export PSUBMIT_JOBID PSUBMIT_NP
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
