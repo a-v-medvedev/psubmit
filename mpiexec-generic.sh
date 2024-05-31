@@ -12,6 +12,10 @@ elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
     echo "err.$PSUBMIT_JOBID.0"
 else
 
+    [ "$ALL_ARGS" == "--" ] || export ALL_ARGS=""
+
+    [ -z "$ALL_ARGS" ] || export PSUBMIT_ARGS="$ALL_ARGS"
+
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
 	[ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 	echo $- | grep -q x && omit_setx=true || set -x;

@@ -14,6 +14,8 @@ else
 
     [ "$ALL_ARGS" == "--" ] && ALL_ARGS=""
 
+    [ -z "$ALL_ARGS" ] || export PSUBMIT_ARGS="$ALL_ARGS"
+
     # The line below is to cut off CUDA from the environment
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
     

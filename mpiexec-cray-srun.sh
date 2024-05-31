@@ -14,6 +14,10 @@ if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
     echo "err.$PSUBMIT_JOBID.0"
 else
+    [ "$ALL_ARGS" == "--" ] && ALL_ARGS=""
+
+    [ -z "$ALL_ARGS" ] || export PSUBMIT_ARGS="$ALL_ARGS"
+
     [ -z "$NGPUS" ] && NGPUS=0
     [ "$NGPUS" == "0" ] || gpuopts="--cpu-bind=no --gpus-per-node=$NGPUS"
     [ -z "$PSUBMIT_NTH" ] && PSUBMIT_NTH=1
