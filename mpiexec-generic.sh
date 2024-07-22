@@ -12,7 +12,7 @@ elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
     echo "err.$PSUBMIT_JOBID.0"
 else
 
-    [ "$ALL_ARGS" == "--" ] || export ALL_ARGS=""
+    [ "$ALL_ARGS" == "--" ] && export ALL_ARGS=""
 
     [ -z "$ALL_ARGS" ] || export PSUBMIT_ARGS="$ALL_ARGS"
 
