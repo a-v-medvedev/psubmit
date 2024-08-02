@@ -10,7 +10,7 @@ DIRECT_OVERSUBSCRIBE_LEVEL=1
 function psub_check_job_status() {
     if [ "$jobstatus" == "Q" ]; then
         local np=$(expr "$NNODES" \* "$PPN")
-        daemonize -EPATH=$PATH -ELD_LIBRARY_PATH=$LD_LIBRARY_PATH -l "$DIRECT_LOCKFILE" -c $PWD -p "$DIRECT_JOB_PID" -o ${FILE_OUT} $(which timeout) -k10s ${TIME_LIMIT}m "$PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh" -t direct -i "$jobid_short" -n "$np" -p "$PPN" -h "$NTH" -d "$PSUBMIT_DIRNAME" -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" >& "$OUTFILE"
+        daemonize -EPATH=$PATH -ELD_LIBRARY_PATH=$LD_LIBRARY_PATH -l "$DIRECT_LOCKFILE" -c $PWD -p "$DIRECT_JOB_PID" -o ${FILE_OUT} $(which timeout) -k10s ${TIME_LIMIT}m "$PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh" -t direct -i "$jobid_short" -n "$np" -p "$PPN" -h "$NTH" -g "$NGPUS" -d "$PSUBMIT_DIRNAME" -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" >& "$OUTFILE"
         grep -q 'Is another instance running' "$OUTFILE"
         if [ "$?" == "0" ]; then 
             jobstatus="Q"; 
