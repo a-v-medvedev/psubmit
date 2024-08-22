@@ -4,17 +4,17 @@ function usage() {
     echo "Usage: " $(basename $0) "-n NUM_NODES [-p PROC_PER_NODE] [-t NTHREADS] [-o options_file] [-a args] [-e executable_bunary] [-b preproc_script] [-f postproc_script] [-x]"; exit 1;
 }
 
-if [ -z "$1" ]; then usage; fi
+#if [ -z "$1" ]; then usage; fi
 NNODES=1
 PPN="-"
 NTH="1"
 OPTSCRIPT=./psubmit.opt
 ARGS=""
 
-while getopts ":n:p:t:o:a:b:f:e:x" opt; do
+while getopts "n:p:t:o:a:b:f:e:x" opt; do
   case $opt in
     n)
-      NNODES=$OPTARG
+      NNODES_CMDLINE=$OPTARG
       ;;
     p)
       PPN_CMDLINE=$OPTARG
@@ -55,7 +55,7 @@ done
 PSUBMIT_DIRNAME=$(cd $(dirname "$0") && pwd -P)
 
 # All these options can be overriden by psubmit.opt script
-QUEUE=test
+QUEUE=""
 TIME_LIMIT=10
 INIT_COMMANDS=""
 INJOB_INIT_COMMANDS=""
@@ -70,6 +70,7 @@ else
     exit 1
 fi
 
+[ -z "$NNODES_CMDLINE" ] || NNODES="$NNODES_CMDLINE"
 [ -z "$PPN_CMDLINE" ] || PPN="$PPN_CMDLINE"
 [ -z "$NTH_CMDLINE" ] || NTH="$NTH_CMDLINE"
 [ -z "$TARGET_BIN_CMDLINE" ] || TARGET_BIN="$TARGET_BIN_CMDLINE"
@@ -80,9 +81,8 @@ if [ "$PPN" == "-" ]; then
     exit 1
 fi
 
-[ -z "$BEFORE" -a -z "$PSUBMIT_PREPROC" ] || export PSUBMIT_PREPROC="$BEFORE"
-
-[ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || export PSUBMIT_POSTPROC="$AFTER"
+[ -z "$BEFORE" -a -z "$PSUBMIT_PREPROC" ] || export PSUBMIT_PREPROC="${PSUBMIT_PREPROC:=$BEFORE}"
+[ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || export PSUBMIT_POSTPROC="${PSUBMIT_POSTPROC:=$AFTER}"
 
 n=$(expr $NNODES \* $PPN)
 
