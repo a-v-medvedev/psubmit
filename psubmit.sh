@@ -4,14 +4,13 @@ function usage() {
     echo "Usage: " $(basename $0) "-n NUM_NODES [-p PROC_PER_NODE] [-t NTHREADS] [-o options_file] [-a args] [-e executable_bunary] [-b preproc_script] [-f postproc_script] [-x]"; exit 1;
 }
 
-#if [ -z "$1" ]; then usage; fi
 NNODES=1
 PPN="-"
 NTH="1"
 OPTSCRIPT=./psubmit.opt
 ARGS=""
 
-while getopts "n:p:t:o:a:b:f:e:x" opt; do
+while getopts "n:p:t:o:a:b:f:e:xs" opt; do
   case $opt in
     n)
       NNODES_CMDLINE=$OPTARG
@@ -33,6 +32,9 @@ while getopts "n:p:t:o:a:b:f:e:x" opt; do
       ;;
     x)
       PSUBMIT_DBG="ON" 
+      ;;
+    s)  
+      PSUBMIT_OMIT_STACKTRACE_SCAN="ON"
       ;;
     b) 
       export PSUBMIT_PREPROC="$OPTARG"
@@ -162,6 +164,6 @@ do
 done
 
 psub_move_outfiles
-psub_make_stackfile
+[ "$PSUBMIT_OMIT_STACKTRACE_SCAN" == "ON" ] || psub_make_stackfile
 
 

@@ -28,39 +28,23 @@ function psub_common_move_outfiles() {
     [ -f hostfile.$jobid_short ] && mv hostfile.$jobid_short $dir/results.$jobid_short
     local rank0=""
     local erank0=""
-    local errfiles=""
     local r=$(ls -1d $dir/out.$jobid_short.* 2> /dev/null)
-    if [ "$r" != "" ]; then
-        mv $dir/out.${jobid_short}.* $dir/results.$jobid_short
-        PSUBMIT_NP=$(expr $NNODES \* $PPN)
-        PSUBMIT_JOBID=$jobid_short
+    local rr=$(ls -1d $dir/out.$jobid_short 2> /dev/null)
+    if [ "$r" != "" -o "$rr" != "" ]; then
+        [ -z "$r" ] || mv $dir/out.${jobid_short}.* $dir/results.$jobid_short
+        [ -z "$rr" ] || mv $dir/out.${jobid_short} $dir/results.$jobid_short
+        PSUBMIT_NP=$(expr $NNODES \* $PPN); PSUBMIT_JOBID=$jobid_short
         local f=$(. "$MPIEXEC" --show-rank0-out)
-        if [ "$f" != "" ]; then
-            if [ -f "$dir/results.$jobid_short/$f" ]; then
-                olddir=$PWD
-                cd "$dir/results.$jobid_short"
-                ln -s "$f" "rank0"
-                rank0="TRUE"
-                cd $olddir
-            fi
-        fi
+        local fe=$(. "$MPIEXEC" --show-rank0-err)
+        [ ! -z "$f" -a -f "$dir/results.$jobid_short/$f" ] && { ln -s "$f" "$dir/results.$jobid_short/rank0"; rank0="TRUE";}
+        [ ! -z "$fe" -a -f "$dir/results.$jobid_short/$fe" ] && { ln -s "$fe" "$dir/results.$jobid_short/erank0"; erank0="TRUE";}
     fi
     r=$(ls -1d $dir/err.$jobid_short.* 2> /dev/null)
     if [ "$r" != "" ]; then
         mv $dir/err.$jobid_short.* $dir/results.$jobid_short
-        PSUBMIT_NP=$(expr $NNODES \* $PPN)
-        PSUBMIT_JOBID=$jobid_short
-        f=$(. "$MPIEXEC" --show-rank0-err)
-        if [ "$f" != "" ]; then
-            if [ -f "$dir/results.$jobid_short/$f" ]; then
-                olddir=$PWD
-                cd "$dir/results.$jobid_short"
-                ln -s "$f" "erank0"
-                erank0="TRUE"
-                cd $olddir
-            fi
-        fi
-        errfiles="TRUE"
+        PSUBMIT_NP=$(expr $NNODES \* $PPN); PSUBMIT_JOBID=$jobid_short
+        local fe=$(. "$MPIEXEC" --show-rank0-err)
+        [ ! -z "$fe" -a -f "$dir/results.$jobid_short/$fe" ] && { ln -s "$fe" "$dir/results.$jobid_short/erank0"; erank0="TRUE";}
     fi
     r=$(ls -1d $dir/*.${jobid_short}.* $dir/*.${jobid_short} 2> /dev/null)
     if [ "$r" != "" ]; then
@@ -83,9 +67,9 @@ function psub_common_move_outfiles() {
         tail -n15 $dir/results.$jobid_short/$(basename $FILE_OUT)
         echo -ne "\n--- Psubmit wrapper output: ---\n"
         tail -n15 $dir/results.$jobid_short/psubmit_wrapper_output.$jobid_short
-        [ -z "$rank0" ] || ( echo -ne "\n--- Rank 0 output: ---\n" && tail -n15 $dir/results.$jobid_short/rank0 )
-        [ -z "$erank0" ] || ( echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $dir/results.$jobid_short/erank0 )
-        [ -z "$errfiles" ] || ( echo -ne "\n--- NOTE: THERE ARE ERROR OUTPUT FILES\n" && cat $dir/results.$jobid_short/err.$jobid_short.* | head )
+        [ -z "$rank0" ] || { echo -ne "\n--- Rank 0 output: ---\n" && tail -n15 $dir/results.$jobid_short/rank0; }
+        [ -z "$erank0" ] || { echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $dir/results.$jobid_short/erank0; }
+        [ -z "$erank0" ] || echo -ne "\n--- NOTE: THERE ARE ERROR OUTPUT FILES\n"
     fi
 }
 

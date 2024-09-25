@@ -12,11 +12,13 @@ NUL="0"
 [ "$PSUBMIT_NP" -gt 100 ] && NUL="000"
 [ "$PSUBMIT_NP" -gt 1000 ] && NUL="0000"
 [ "$PSUBMIT_NP" -gt 10000 ] && NUL="00000"
+export PSUBMIT_RANK0="$dir/1/rank.$NUL/stdout"
+export PSUBMIT_ERANK0="$dir/1/rank.$NUL/stderr"
 
 if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
-    echo "$dir/1/rank.$NUL/stdout"
+    echo "$PSUBMIT_RANK0"
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
-    echo "$dir/1/rank.$NUL/stderr"
+    echo "$PSUBMIT_ERANK0"
 else
 
     [ "$ALL_ARGS" == "--" ] && ALL_ARGS=""

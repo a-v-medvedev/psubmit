@@ -9,10 +9,13 @@ ALL_ARGS=$(eval echo '' $*)
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_NP%/$PSUBMIT_NP/g")
 
+export PSUBMIT_RANK0="out.$PSUBMIT_JOBID.0"
+export PSUBMIT_ERANK0="err.$PSUBMIT_JOBID.0"
+
 if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
-    echo "out.$PSUBMIT_JOBID.0"
+    echo "$PSUBMIT_RANK0"
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
-    echo "err.$PSUBMIT_JOBID.0"
+    echo "$PSUBMIT_ERANK0"
 else
     [ "$ALL_ARGS" == "--" ] && ALL_ARGS=""
 
