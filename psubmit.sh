@@ -10,7 +10,7 @@ NTH="1"
 OPTSCRIPT=./psubmit.opt
 ARGS=""
 
-while getopts "n:p:t:o:a:b:f:e:xs" opt; do
+while getopts "n:p:t:o:a:b:f:l:e:xs" opt; do
   case $opt in
     n)
       NNODES_CMDLINE=$OPTARG
@@ -42,6 +42,9 @@ while getopts "n:p:t:o:a:b:f:e:xs" opt; do
     f) 
       export PSUBMIT_POSTPROC="$OPTARG"
       ;;
+    l)
+      export PSUBMIT_OPTLIST="$OPTARG"
+      ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
       usage
@@ -70,6 +73,28 @@ if [ -f "$OPTSCRIPT" ]; then
 else
     echo "Cannot open options script:" "$OPTSCRIPT"
     exit 1
+fi
+
+if [ -v PSUBMIT_OPTLIST ]; then
+    for opt in $(echo $PSUBMIT_OPTLIST | tr ':' ' '); do
+       case $opt in
+       nnodes=*) NNODES=$(echo $opt | cut -d= -f2);;
+       ppn=*) PPN=$(echo $opt | cut -d= -f2);;
+       nth=*) NTH=$(echo $opt | cut -d= -f2);;
+       ngpus=*) NGPUS=$(echo $opt | cut -d= -f2);;
+       queue=*) QUEUE=$(echo $opt | cut -d= -f2);;
+       constraint=*) CONSTRAINT=$(echo $opt | cut -d= -f2);;
+       account=*) ACCOUNT=$(echo $opt | cut -d= -f2);;
+       nodetype=*) NODETYPE=$(echo $opt | cut -d= -f2);;
+       time=*) TIME_LIMIT=$(echo $opt | cut -d= -f2);;
+       gres=*) GENERIC_RESOURCES=$(echo $opt | cut -d= -f2);;
+       mpiexec=*) MPIEXEC=$(echo $opt | cut -d= -f2);;
+       batch=*) BATCH=$(echo $opt | cut -d= -f2);;
+       before=*) BEFORE=$(echo $opt | cut -d= -f2);;
+       after=*) AFTER=$(echo $opt | cut -d= -f2);;
+       *) echo "Unknown key in the options list supplied by -l option"; usage;;
+       esac
+    done
 fi
 
 [ -z "$NNODES_CMDLINE" ] || NNODES="$NNODES_CMDLINE"
