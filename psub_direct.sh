@@ -47,6 +47,10 @@ function psub_check_job_status() {
     psub_update_oldjobstatus
 }
 
+psub_print_queue() {
+    return 0
+}
+
 function psub_check_job_done() {
     psub_check_if_exited
     [ "$?" == 1 ] && jobdone=1

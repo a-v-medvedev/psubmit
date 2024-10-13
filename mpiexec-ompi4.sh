@@ -19,6 +19,11 @@ if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
     echo "$PSUBMIT_RANK0"
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
     echo "$PSUBMIT_ERANK0"
+elif [ "$ALL_ARGS" == "--has-err" ]; then
+    if [ ! -z "$(ls -1d $dir/1/rank.*/stderr 2>/dev/null)" ]; then
+        allnull=1; for i in $dir/1/rank.*/stderr; do [ "$(cat $i | wc -l)" == "0" ] || allnull=0; done;
+        [ "$allnull" == "1" ] || echo TRUE
+    fi
 else
 
     [ "$ALL_ARGS" == "--" ] && ALL_ARGS=""

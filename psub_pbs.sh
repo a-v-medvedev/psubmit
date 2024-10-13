@@ -45,6 +45,13 @@ psub_submit() {
     sleep 2
 }
 
+psub_print_queue() {
+    local descr=""
+    [ -z "$QUEUE" ] || descr="queue: $QUEUE"
+    echo $descr
+    return 0    
+}
+
 psub_set_paths() {
     psub_common_set_paths
 }
@@ -55,7 +62,7 @@ psub_set_outfiles() {
 
 psub_move_outfiles() {
     psub_common_move_outfiles
-    local dir="$SCRATCH_PWD"
+    local dir="$PSUBMIT_PWD"
     local target="$dir/results.$jobid_short"
     mv pbs_output.e$jobid_short "$target"
     [ -z "$PBSFILE" ] || rm -f $PBSFILE

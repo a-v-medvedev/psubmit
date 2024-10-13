@@ -145,6 +145,7 @@ check_bash_func_declared psub_cleanup
 check_bash_func_declared psub_check_job_status
 check_bash_func_declared psub_check_job_done
 check_bash_func_declared psub_cancel
+check_bash_func_declared psub_print_queue
 
 [ ! -z "$PSUBMIT_DBG" ] && set -x 
 
@@ -153,10 +154,7 @@ psub_set_paths
 psub_set_outfiles
 
 echo "Job ID $jobid_short" 
-echo -ne "Queue: $QUEUE"
-[ ! -z "$QUEUE_SUFFIX" ] && echo -ne "[$QUEUE_SUFFIX]"
-[ ! -z "$NODETYPE" ] && echo -ne " nodetype: $NODETYPE"
-echo -ne "\n"
+psub_print_queue
 
 ncancel="0"
 while [ ! -f "$FILE_OUT" ]; do

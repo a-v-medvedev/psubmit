@@ -62,12 +62,19 @@ psub_submit() {
     echo $submitted
 }
 
+psub_print_queue() {
+    local descr=""
+    [ -z "$QUEUE" ] || descr="queue: $QUEUE"
+    echo $descr
+    return 0
+}
+
 psub_set_paths() {
     psub_common_set_paths
 }
 
 psub_set_outfiles() {
-    FILE_OUT=$SCRATCH_PWD/lsf-output.$jobid
+    FILE_OUT=$PSUBMIT_PWD/lsf-output.$jobid
 }
 
 psub_move_outfiles() {

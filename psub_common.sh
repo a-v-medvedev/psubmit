@@ -8,14 +8,14 @@ function psub_update_oldjobstatus() {
 }
 
 function psub_common_set_paths() {
-    SCRATCH_PWD="$PWD"
-    SCRATCH_HOME="$HOME"
+    PSUBMIT_PWD="$PWD"
+    PSUBMIT_HOME="$HOME"
 }
 
 function psub_common_move_outfiles() {
     [ ! -f "$FILE_OUT" -o "$jobid" == "" ] && return
-    local dir="$SCRATCH_PWD"
-    local home="$SCRATCH_HOME"
+    local dir="$PSUBMIT_PWD"
+    local home="$PSUBMIT_HOME"
     mkdir -p $dir/results.$jobid_short
     if [ -f $FILE_OUT ]; then 
         mv $FILE_OUT $dir/results.$jobid_short
@@ -27,7 +27,7 @@ function psub_common_move_outfiles() {
     [ -f psubmit_wrapper_output.$jobid_short ] && mv psubmit_wrapper_output.$jobid_short $dir/results.$jobid_short
     [ -f hostfile.$jobid_short ] && mv hostfile.$jobid_short $dir/results.$jobid_short
     local rank0=""
-    local erank0=""
+    local erank_not_empty=""
     local r=$(ls -1d $dir/out.$jobid_short.* 2> /dev/null)
     local rr=$(ls -1d $dir/out.$jobid_short 2> /dev/null)
     if [ "$r" != "" -o "$rr" != "" ]; then
@@ -37,14 +37,16 @@ function psub_common_move_outfiles() {
         local f=$(. "$MPIEXEC" --show-rank0-out)
         local fe=$(. "$MPIEXEC" --show-rank0-err)
         [ ! -z "$f" -a -f "$dir/results.$jobid_short/$f" ] && { ln -s "$f" "$dir/results.$jobid_short/rank0"; rank0="TRUE";}
-        [ ! -z "$fe" -a -f "$dir/results.$jobid_short/$fe" ] && { ln -s "$fe" "$dir/results.$jobid_short/erank0"; erank0="TRUE";}
+        [ ! -z "$fe" -a -f "$dir/results.$jobid_short/$fe" ] && { ln -s "$fe" "$dir/results.$jobid_short/erank0"; }
+        erank_not_empty=$(. "$MPIEXEC" --has-err)
     fi
     r=$(ls -1d $dir/err.$jobid_short.* 2> /dev/null)
     if [ "$r" != "" ]; then
+        erank_not_empty=$(. "$MPIEXEC" --has-err)
         mv $dir/err.$jobid_short.* $dir/results.$jobid_short
         PSUBMIT_NP=$(expr $NNODES \* $PPN); PSUBMIT_JOBID=$jobid_short
         local fe=$(. "$MPIEXEC" --show-rank0-err)
-        [ ! -z "$fe" -a -f "$dir/results.$jobid_short/$fe" ] && { ln -s "$fe" "$dir/results.$jobid_short/erank0"; erank0="TRUE";}
+        [ ! -z "$fe" -a -f "$dir/results.$jobid_short/$fe" ] && { ln -s "$fe" "$dir/results.$jobid_short/erank0"; }
     fi
     r=$(ls -1d $dir/*.${jobid_short}.* $dir/*.${jobid_short} 2> /dev/null)
     if [ "$r" != "" ]; then
@@ -59,7 +61,7 @@ function psub_common_move_outfiles() {
     fi
     echo "Results collected:" "results.${jobid_short}/"
     [ -z "$rank0" ] || echo "Rank 0 output:" results.$jobid_short/rank0
-    [ -z "$erank0" ] || echo "Rank 0 errout:" results.$jobid_short/erank0
+    [ -z "$erank_not_empty" ] || echo "Rank 0 errout:" results.$jobid_short/erank0
     echo "Batch system output:" results.$jobid_short/`basename $FILE_OUT`
     echo "Psubmit wrapper output:" results.$jobid_short/psubmit_wrapper_output.$jobid_short
     if true; then
@@ -67,14 +69,16 @@ function psub_common_move_outfiles() {
         tail -n15 $dir/results.$jobid_short/$(basename $FILE_OUT)
         echo -ne "\n--- Psubmit wrapper output: ---\n"
         tail -n15 $dir/results.$jobid_short/psubmit_wrapper_output.$jobid_short
-        [ -z "$rank0" ] || { echo -ne "\n--- Rank 0 output: ---\n" && tail -n15 $dir/results.$jobid_short/rank0; }
-        [ -z "$erank0" ] || { echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $dir/results.$jobid_short/erank0; }
-        [ -z "$erank0" ] || echo -ne "\n--- NOTE: THERE ARE ERROR OUTPUT FILES\n"
+        if [ ! -z "$rank0" -a "$(cat $dir/results.$jobid_short/rank0 | wc -l)" != "0" ]; then
+            echo -ne "\n--- Rank 0 output: ---\n" && tail -n15 $dir/results.$jobid_short/rank0;
+        fi 
+        [ -z "$erank_not_empty" ] || { echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $dir/results.$jobid_short/erank0; }
+        [ -z "$erank_not_empty" ] || echo -ne "\n--- NOTE: THERE ARE ERROR OUTPUT FILES\n"
     fi
 }
 
 function psub_common_make_stackfile() {
-    local dir="$SCRATCH_PWD"
+    local dir="$PSUBMIT_PWD"
 	local stackdir=$dir/results.$jobid_short
     if [ -d "$dir/results.$jobid_short/out.$jobid_short" ]; then
 		stackdir="$dir/results.$jobid_short"

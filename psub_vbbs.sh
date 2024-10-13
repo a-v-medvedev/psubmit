@@ -82,12 +82,16 @@ function psub_submit() {
     if [ -z "$jobid" ]; then jobstatus="NONE"; echo ">> psub_vbbs: cannot find output of 'vbbs start'"; return; fi
 }
 
+psub_print_queue() {
+    return 0
+}
+
 function psub_set_paths() {
     psub_common_set_paths
 }
 
 function psub_set_outfiles() {
-    FILE_OUT=$SCRATCH_PWD/vbbs-$jobid.out
+    FILE_OUT=$PSUBMIT_PWD/vbbs-$jobid.out
 }
 
 function psub_move_outfiles() {
