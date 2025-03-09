@@ -32,14 +32,14 @@ else
 
     
     echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-    echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)
+    echo ">>> PSUBMIT: exetable is: " $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
 #    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $TARGET_BIN)
+#    ldd $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
     
     [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 
     echo $- | grep -q x && omit_setx=true || set -x;
-    mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$TARGET_BIN" $ALL_ARGS
+    mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$PSUBMIT_SUBDIR/$TARGET_BIN" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
 
     time2=$(date +"%s");

@@ -37,13 +37,13 @@ else
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
 
     echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
-    echo ">>> PSUBMIT: Executable is: " $(which $TARGET_BIN)
+    echo ">>> PSUBMIT: Executable is: " $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
 #    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $TARGET_BIN)
+#    ldd $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
     
     time2=$(date +"%s");
     echo $- | grep -q x && omit_setx=true || set -x
-    mpirun --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
+    mpirun --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$PSUBMIT_SUBDIR/$TARGET_BIN" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
 
     time3=$(date +"%s");

@@ -39,7 +39,7 @@ else
     fi
 
     echo $- | grep -q x && omit_setx=true || set -x;
-    srun $overlap $machinefile $gpuopts --ntasks-per-node=$PSUBMIT_PPN --output=out.$PSUBMIT_JOBID.%t --error=err.$PSUBMIT_JOBID.%t --input=none "$TARGET_BIN" $ALL_ARGS >& out.$PSUBMIT_JOBID.master
+    srun $overlap $machinefile $gpuopts --ntasks-per-node=$PSUBMIT_PPN --output=out.$PSUBMIT_JOBID.%t --error=err.$PSUBMIT_JOBID.%t --input=none "$PSUBMIT_SUBDIR/$TARGET_BIN" $ALL_ARGS >& out.$PSUBMIT_JOBID.master
     [ -z "$omit_setx" ] && set +x
 
     [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC

@@ -27,10 +27,9 @@ else
     # The line below is to cut off CUDA from the environment
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
     
-    echo ">>> PSUBMIT: mpiexec.hydra is: " $(which mpiexec.hydra)
-    echo ">>> PSUBMIT: Executable is: " $(which $TARGET_BIN)
-#    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $TARGET_BIN)
+  
+#        echo ">>> PSUBMIT: ldd:"
+#        ldd $executable
 
     [ -z "$PSUBMIT_NTH" ] && PSUBMIT_NTH=1
     export OMP_NUM_THREADS="$PSUBMIT_NTH"
@@ -38,19 +37,27 @@ else
     export PSUBMIT_JOBID PSUBMIT_NP
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
 
-    [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+    if [ "$TARGET_BIN" != "false" ]; then
+        echo ">>> PSUBMIT: mpiexec.hydra is: " $(which mpiexec.hydra)
+        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+        if [ ! -e $executable ]; then
+            executable=$(which $TARGET_BIN)
+        fi
+        echo ">>> PSUBMIT: Executable is: " $executable
 
-    export I_MPI_HYDRA_BOOTSTRAP="ssh"
-
-    time2=$(date +"%s")
-    echo $- | grep -q x && omit_setx=true || set -x;
-    mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$TARGET_BIN" $ALL_ARGS
-    [ -z "$omit_setx" ] && set +x
-
-    time3=$(date +"%s");
-    walltime="$(expr $time3 - $time2)"
-    [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
-    echo ">>> PSUBMIT: Walltime: $walltime"
+        if [ ! -z "$executable" ]; then
+            [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+            export I_MPI_HYDRA_BOOTSTRAP="ssh"
+            time2=$(date +"%s")
+            echo $- | grep -q x && omit_setx=true || set -x;
+            mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$executable" $ALL_ARGS
+            [ -z "$omit_setx" ] && set +x
+            time3=$(date +"%s");
+            walltime="$(expr $time3 - $time2)"
+            [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
+            echo ">>> PSUBMIT: Walltime: $walltime"
+        fi
+    fi
 
     [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC    
 fi

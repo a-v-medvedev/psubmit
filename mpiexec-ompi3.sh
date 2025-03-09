@@ -41,15 +41,15 @@ else
 
     echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
     echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-    echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)
+    echo ">>> PSUBMIT: exetable is: " $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
     [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
 #    echo ">>> PSUBMIT: PATH is: " $PATH
 #    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $TARGET_BIN)
+#    ldd $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
     
     time2=$(date +"%s");
     echo $- | grep -q x && omit_setx=true || set -x
-    mpirun $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
+    mpirun $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$PSUBMIT_SUBDIR/$TARGET_BIN" $ALL_ARGS
     [ -z "$omit_setx" ] && set +x
 
     time3=$(date +"%s")

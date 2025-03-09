@@ -28,15 +28,15 @@ else
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
 
     echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-    echo ">>> PSUBMIT: Executable is: " $(which $TARGET_BIN)
+    echo ">>> PSUBMIT: Executable is: " $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
 #    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $TARGET_BIN)
+#    ldd $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
     export PSUBMIT_JOBID PSUBMIT_NP
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
 
     [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 
-	[ ! -f $TARGET_BIN ] && TARGET_BIN=$(which $TARGET_BIN)
+	[ ! -f $PSUBMIT_SUBDIR/$TARGET_BIN ] && TARGET_BIN=$(which $TARGET_BIN)
 
 	newexecname=$(mktemp)
 	nds=$(echo $PSUBMIT_NODELIST | sed 's/,/ /g')

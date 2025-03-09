@@ -39,27 +39,35 @@ else
 
     export PSUBMIT_JOBID PSUBMIT_NP PSUBMIT_NTH PSUBMIT_PPN
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
+    
+    if [ "$TARGET_BIN" != "false" ]; then
+        [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 
-    [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
-
-    echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
-    echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-    echo ">>> PSUBMIT: exetable is: " $(which $TARGET_BIN)
-    [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
+        echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
+        echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
+    
+        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+        if [ ! -e $executable ]; then
+            executable=$(which $TARGET_BIN)
+        fi        
+        echo ">>> PSUBMIT: exetable is: " $executable
+        if [ ! -z "$executable" ]; then
+            [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
 #    echo ">>> PSUBMIT: PATH is: " $PATH
 #    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $TARGET_BIN)
+#    ldd $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
     
-    time2=$(date +"%s");
-    echo $- | grep -q x && omit_setx=true || set -x
-    mpirun -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
-    # for modern ucx-based: add: -mca pml ucx -mca btl ^vader,tcp,openib 
-    [ -z "$omit_setx" ] && set +x
+            time2=$(date +"%s");
+            echo $- | grep -q x && omit_setx=true || set -x
+            mpirun -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to none -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$executable" $ALL_ARGS
+            # for modern ucx-based: add: -mca pml ucx -mca btl ^vader,tcp,openib 
+            [ -z "$omit_setx" ] && set +x
 
-    time3=$(date +"%s");
-    walltime=$(expr $time3 - $time2)
-    [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
-    echo ">>> PSUBMIT: Walltime: $walltime"
-
+            time3=$(date +"%s");
+            walltime=$(expr $time3 - $time2)
+            [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
+            echo ">>> PSUBMIT: Walltime: $walltime"
+        fi
+    fi
     [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
 fi
