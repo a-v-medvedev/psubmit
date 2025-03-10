@@ -4,10 +4,11 @@ QUEUE=test                # queue name
                           #                 partitions or specific resources
 #RESOURCE_HANDLING="gres" # SLURM-specific: gres or qos: two options how to apply NODETYPE setting
 ACCOUNT="project_1234"    # SLURM-specific: account parameter
+NNODES=1                  # number of nodes
 PPN=1                     # MPI ranks per node
 NTH=1                     # number of OpenMP threads per rank
 TIME_LIMIT="10"           # in minutes
-TARGET_BIN="hostname"     # binary to run which mpirun/mpiexec, full path, "./" as a path normally works
+TARGET_BIN="hostname"     # binary to run which mpirun/mpiexec
 JOB_NAME="my_testjob"     # default is: "$TARGET_BIN"
 INIT_COMMANDS=''          # execuled with eval before job submit
 INJOB_INIT_COMMANDS=''    # execuled with eval before mpirun

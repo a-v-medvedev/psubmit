@@ -36,26 +36,30 @@ else
 
     export PSUBMIT_JOBID PSUBMIT_NP
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
-    
-    [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 
-    echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
-    echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-    echo ">>> PSUBMIT: exetable is: " $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
-    [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
-#    echo ">>> PSUBMIT: PATH is: " $PATH
-#    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
-    
-    time2=$(date +"%s");
-    echo $- | grep -q x && omit_setx=true || set -x
-    mpirun $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$PSUBMIT_SUBDIR/$TARGET_BIN" $ALL_ARGS
-    [ -z "$omit_setx" ] && set +x
+    if [ "$TARGET_BIN" != "false" ]; then
+        [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+        echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
+        echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
+        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+        if [ ! -e $executable ]; then
+            executable=$(which $TARGET_BIN)
+        fi
+        echo ">>> PSUBMIT: Executable is: " $executable
+        if [ ! -z "$executable" ]; then
+            [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
+            
+            time2=$(date +"%s");
 
-    time3=$(date +"%s")
-    walltime=$(expr $time3 - $time2)
-    [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 '+' $time1)
-    echo ">>> PSUBMIT: Walltime: $walltime"
+            echo $- | grep -q x && omit_setx=true || set -x
+            mpirun $prefix $machinefile --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$executable" $ALL_ARGS
+            { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
 
+            time3=$(date +"%s")
+            walltime=$(expr $time3 - $time2)
+            [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 '+' $time1)
+            echo ">>> PSUBMIT: Walltime: $walltime"
+        fi
+    fi
     [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
 fi

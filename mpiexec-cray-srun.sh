@@ -31,16 +31,28 @@ else
     [ -z "$PSUBMIT_NTH" ] && PSUBMIT_NTH=1
     export OMP_NUM_THREADS="$PSUBMIT_NTH"
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
-    if [ -f "hostfile.$PSUBMIT_JOBID" ]; then 
-        [ -z "$SLURM_JOBID" ] && { echo "FATAL: mpiexec-cray-srun.sh: there is a hostfile, so the SLURM_JOBID must be set!"; exit 1; }
-        sed -i 's/:.*//' "hostfile.$PSUBMIT_JOBID" 
-        machinefile="-F hostfile.$PSUBMIT_JOBID"
-        overlap="--overlap --jobid=$SLURM_JOBID"
-    fi
 
-    echo $- | grep -q x && omit_setx=true || set -x;
-    srun $overlap $machinefile $gpuopts --ntasks-per-node=$PSUBMIT_PPN --output=out.$PSUBMIT_JOBID.%t --error=err.$PSUBMIT_JOBID.%t --input=none "$PSUBMIT_SUBDIR/$TARGET_BIN" $ALL_ARGS >& out.$PSUBMIT_JOBID.master
-    [ -z "$omit_setx" ] && set +x
+    if [ "$TARGET_BIN" != "false" ]; then
+        echo ">>> PSUBMIT: srun is: " $(which srun)
+        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+        if [ ! -e $executable ]; then
+            executable=$(which $TARGET_BIN)
+        fi
+        echo ">>> PSUBMIT: Executable is: " $executable
+
+        if [ ! -z "$executable" ]; then
+            if [ -f "hostfile.$PSUBMIT_JOBID" ]; then 
+                [ -z "$SLURM_JOBID" ] && { echo "FATAL: mpiexec-cray-srun.sh: there is a hostfile, so the SLURM_JOBID must be set!"; exit 1; }
+                sed -i 's/:.*//' "hostfile.$PSUBMIT_JOBID" 
+                machinefile="-F hostfile.$PSUBMIT_JOBID"
+                overlap="--overlap --jobid=$SLURM_JOBID"
+            fi
+
+            echo $- | grep -q x && omit_setx=true || set -x;
+            srun $overlap $machinefile $gpuopts --ntasks-per-node=$PSUBMIT_PPN --output=out.$PSUBMIT_JOBID.%t --error=err.$PSUBMIT_JOBID.%t --input=none "$executable" $ALL_ARGS >& out.$PSUBMIT_JOBID.master
+            { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
+        fi
+    fi
 
     [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
     

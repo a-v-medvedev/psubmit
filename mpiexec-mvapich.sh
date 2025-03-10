@@ -30,19 +30,22 @@ else
     export PSUBMIT_JOBID PSUBMIT_NP
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
 
-    
-    echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-    echo ">>> PSUBMIT: exetable is: " $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
-#    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
-    
-    [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+    if [ "$TARGET_BIN" != "false" ]; then    
+        echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
+        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+        if [ ! -e $executable ]; then
+            executable=$(which $TARGET_BIN)
+        fi
+        echo ">>> PSUBMIT: Executable is: " $executable
+        if [ ! -z "$executable" ]; then
+            [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+            echo $- | grep -q x && omit_setx=true || set -x;
+            mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$executable" $ALL_ARGS
+            { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
 
-    echo $- | grep -q x && omit_setx=true || set -x;
-    mpiexec.hydra $machinefile -np "$PSUBMIT_NP" -ppn "$PSUBMIT_PPN" --errfile-pattern=err.$PSUBMIT_JOBID.%r --outfile-pattern=out.$PSUBMIT_JOBID.%r "$PSUBMIT_SUBDIR/$TARGET_BIN" $ALL_ARGS
-    [ -z "$omit_setx" ] && set +x
-
-    time2=$(date +"%s");
-    [ "$(expr $time2 - $time1)" -lt "2" ] && sleep $(expr 2 - $time2 + $time1)
-    
+            time2=$(date +"%s");
+            [ "$(expr $time2 - $time1)" -lt "2" ] && sleep $(expr 2 - $time2 + $time1)
+        fi
+    fi 
+    [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
 fi

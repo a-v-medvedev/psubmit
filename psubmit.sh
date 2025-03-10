@@ -7,7 +7,7 @@ function usage() {
 NNODES=1
 PPN="-"
 NTH="1"
-OPTSCRIPT=./psubmit.opt
+OPTSCRIPT=psubmit.opt
 ARGS=""
 
 while getopts ":n:p:t:o:a:b:f:l:u:e:xs" opt; do
@@ -87,6 +87,7 @@ fi
 [ -z "$NNODES_CMDLINE" ] || NNODES="$NNODES_CMDLINE"
 [ -z "$PPN_CMDLINE" ] || PPN="$PPN_CMDLINE"
 [ -z "$NTH_CMDLINE" ] || NTH="$NTH_CMDLINE"
+[ -z "$NGPUS" ] && NGPUS=0
 [ -z "$TARGET_BIN_CMDLINE" ] || TARGET_BIN="$TARGET_BIN_CMDLINE"
 export TARGET_BIN
 

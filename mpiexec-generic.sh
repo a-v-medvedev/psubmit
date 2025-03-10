@@ -25,11 +25,21 @@ else
     [ -z "$ALL_ARGS" ] || export PSUBMIT_ARGS="$ALL_ARGS"
 
     [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
-	[ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
-	echo $- | grep -q x && omit_setx=true || set -x;
-	mpirun $machinefile -np "$PSUBMIT_NP" "$PSUBMIT_SUBDIR/$TARGET_BIN" $ALL_ARGS > out.$PSUBMIT_JOBID.0 2> err.$PSUBMIT_JOBID.0
-	[ -z "$omit_setx" ] && set +x
 
+    if [ "$TARGET_BIN" != "false" ]; then
+        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+        if [ ! -e $executable ]; then
+            executable=$(which $TARGET_BIN)
+        fi
+        echo ">>> PSUBMIT: Executable is: " $executable
+
+        if [ ! -z "$executable" ]; then
+            [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+            echo $- | grep -q x && omit_setx=true || set -x;
+            mpirun $machinefile -np "$PSUBMIT_NP" "$executable" $ALL_ARGS > out.$PSUBMIT_JOBID.0 2> err.$PSUBMIT_JOBID.0
+            { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
+        fi
+    fi
     [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
     
 #    t2=$(date +"%s");

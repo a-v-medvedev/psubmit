@@ -53,15 +53,14 @@ else
         echo ">>> PSUBMIT: exetable is: " $executable
         if [ ! -z "$executable" ]; then
             [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
-#    echo ">>> PSUBMIT: PATH is: " $PATH
-#    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $PSUBMIT_SUBDIR/$TARGET_BIN)
     
             time2=$(date +"%s");
+
+            # NOTE: for modern ucx-based: you may add: -mca pml ucx -mca btl ^vader,tcp,openib 
+
             echo $- | grep -q x && omit_setx=true || set -x
             mpirun -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to none -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$executable" $ALL_ARGS
-            # for modern ucx-based: add: -mca pml ucx -mca btl ^vader,tcp,openib 
-            [ -z "$omit_setx" ] && set +x
+            { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
 
             time3=$(date +"%s");
             walltime=$(expr $time3 - $time2)
