@@ -38,20 +38,25 @@ else
     export OMP_NUM_THREADS="$PSUBMIT_NTH"
 
     export PSUBMIT_JOBID PSUBMIT_NP PSUBMIT_NTH PSUBMIT_PPN
-    [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
+    [ -z "$PSUBMIT_PREPROC" ] || source $PSUBMIT_PREPROC
     
     if [ "$TARGET_BIN" != "false" ]; then
         [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
 
         echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
         echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-    
-        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
-        if [ ! -e $executable ]; then
-            executable=$(which $TARGET_BIN)
-        fi        
+   
+        case $TARGET_BIN in
+        /*) executable=$TARGET_BIN;;
+        ./*) executable="$TARGET_BIN";;
+        *) executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+           if [ ! -e $executable ]; then
+               executable=$(which $TARGET_BIN)
+           fi
+           ;;
+        esac 
         echo ">>> PSUBMIT: exetable is: " $executable
-        if [ ! -z "$executable" ]; then
+        if [ ! -z "$executable" -o ! -x "$executable" ]; then
             [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
     
             time2=$(date +"%s");
@@ -66,7 +71,9 @@ else
             walltime=$(expr $time3 - $time2)
             [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
             echo ">>> PSUBMIT: Walltime: $walltime"
+        else
+            echo ">>> PSUBMIT: ERROR: can't find or execute the program"
         fi
     fi
-    [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
+    [ -z "$PSUBMIT_POSTPROC" ] || source $PSUBMIT_POSTPROC
 fi

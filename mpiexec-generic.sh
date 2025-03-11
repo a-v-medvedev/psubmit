@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#t1=$(date +"%s")
-
 ALL_ARGS=$(eval echo '' $*)
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_NP%/$PSUBMIT_NP/g")
@@ -24,25 +22,27 @@ else
 
     [ -z "$ALL_ARGS" ] || export PSUBMIT_ARGS="$ALL_ARGS"
 
-    [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
+    [ -z "$PSUBMIT_PREPROC" ] || source $PSUBMIT_PREPROC
 
     if [ "$TARGET_BIN" != "false" ]; then
-        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
-        if [ ! -e $executable ]; then
-            executable=$(which $TARGET_BIN)
-        fi
+        case $TARGET_BIN in
+        /*)  executable=$TARGET_BIN;;
+        ./*) executable="$TARGET_BIN";;
+        *)   executable=$PSUBMIT_SUBDIR/$TARGET_BIN      
+             if [ ! -e $executable ]; then
+                 executable=$(which $TARGET_BIN)
+             fi
+             ;;
+        esac 
         echo ">>> PSUBMIT: Executable is: " $executable
-
-        if [ ! -z "$executable" ]; then
+        if [ ! -z "$executable" -o ! -x "$executable" ]; then
             [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
-            echo $- | grep -q x && omit_setx=true || set -x;
+            { echo $- | grep -q x && omit_setx=true || set -x; } 2>/dev/null
             mpirun $machinefile -np "$PSUBMIT_NP" "$executable" $ALL_ARGS > out.$PSUBMIT_JOBID.0 2> err.$PSUBMIT_JOBID.0
             { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
+        else
+            echo ">>> PSUBMIT: ERROR: can't find or execute the program"
         fi
     fi
-    [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
-    
-#    t2=$(date +"%s");
-#    [ "$(expr $t2 - $t1)" -lt "2" ] && sleep $(expr 2 - $t2 + $t1)
-
+    [ -z "$PSUBMIT_POSTPROC" ] || source $PSUBMIT_POSTPROC
 fi

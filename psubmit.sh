@@ -99,6 +99,23 @@ fi
 [ -z "$BEFORE" -a -z "$PSUBMIT_PREPROC" ] || export PSUBMIT_PREPROC="${PSUBMIT_PREPROC:=$BEFORE}"
 [ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || export PSUBMIT_POSTPROC="${PSUBMIT_POSTPROC:=$AFTER}"
 
+## NOTE: temporary workaround for "source ./preproc.sh" setting 
+## (which must be changed to "preproc.sh")
+if [ ! -z "$PSUBMIT_PREPROC" ]; then
+    case "$PSUBMIT_PREPROC" in
+    source\ *) PSUBMIT_PREPROC=$PSUBMIT_SUBDIR/$(echo $PSUBMIT_PREPROC | cut -d' ' -f2);;
+    ./*) ;;
+    *) PSUBMIT_PREPROC=$PSUBMIT_SUBDIR/$PSUBMIT_PREPROC;;
+    esac
+fi
+if [ ! -z "$PSUBMIT_POSTPROC" ]; then
+    case "$PSUBMIT_POSTPROC" in
+    source\ *) PSUBMIT_POSTPROC=$PSUBMIT_SUBDIR/$(echo $PSUBMIT_POSTPROC | cut -d' ' -f2);;
+    ./*) ;;
+    *) PSUBMIT_POSTPROC=$PSUBMIT_SUBDIR/$PSUBMIT_POSTPROC;;
+    esac
+fi
+
 n=$(expr $NNODES \* $PPN)
 
 export MPIEXEC=$PSUBMIT_DIRNAME/mpiexec-${MPIEXEC}.sh

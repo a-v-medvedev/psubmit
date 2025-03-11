@@ -28,14 +28,19 @@ else
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
 
     export PSUBMIT_JOBID PSUBMIT_NP
-    [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
+    [ -z "$PSUBMIT_PREPROC" ] || source $PSUBMIT_PREPROC
 
     if [ "$TARGET_BIN" != "false" ]; then    
         echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
-        executable=$PSUBMIT_SUBDIR/$TARGET_BIN
-        if [ ! -e $executable ]; then
-            executable=$(which $TARGET_BIN)
-        fi
+        case $TARGET_BIN in
+        /*)  executable=$TARGET_BIN;;
+        ./*) executable="$TARGET_BIN";;
+        *)   executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+             if [ ! -e $executable ]; then
+                 executable=$(which $TARGET_BIN)
+             fi
+             ;;
+        esac
         echo ">>> PSUBMIT: Executable is: " $executable
         if [ ! -z "$executable" ]; then
             [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
@@ -45,7 +50,9 @@ else
 
             time2=$(date +"%s");
             [ "$(expr $time2 - $time1)" -lt "2" ] && sleep $(expr 2 - $time2 + $time1)
+        else
+            echo ">>> PSUBMIT: ERROR: can't find or execute the program"
         fi
     fi 
-    [ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
+    [ -z "$PSUBMIT_POSTPROC" ] || source $PSUBMIT_POSTPROC
 fi

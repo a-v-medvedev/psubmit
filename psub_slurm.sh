@@ -69,9 +69,11 @@ psub_submit() {
     local queue_flag=""
     [ -z "$QUEUE" ] || queue_flag="-p $QUEUE"
 
+    [ -z "$PSUBMIT_SUBDIR" ] && PSUBMIT_SUBDIR="."
+
     echo $- | grep -q x && xopt="-x"
     [ -z "$JOB_NAME" ] && JOB_NAME=$(basename "$TARGET_BIN")
-    local cmd="sbatch -J $JOB_NAME --exclusive --time=${TIME_LIMIT} $resources $constraint $blackist $whitelist $account $comment $queue_flag -D $PWD -N $NNODES -n $n $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n $n -p $PPN -h $NTH -g $NGPUS -d $PSUBMIT_DIRNAME $xopt  -e $TARGET_BIN -o $OPTSCRIPT"
+    local cmd="sbatch -J $JOB_NAME --exclusive --time=${TIME_LIMIT} $resources $constraint $blackist $whitelist $account $comment $queue_flag -D $PWD -N $NNODES -n $n $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t slurm -n $n -p $PPN -h $NTH -g $NGPUS -d $PSUBMIT_DIRNAME -s $PSUBMIT_SUBDIR $xopt -e $TARGET_BIN -o $PSUBMIT_SUBDIR/$OPTSCRIPT"
     echo ">>> PSUBMIT: $cmd" -a \"\\\"$ARGS\\\"\" > "$psub_slurm_tmpoutfile"
     $cmd -a "$ARGS" 2>&1 | tee -a "$psub_slurm_tmpoutfile"
     grep "Batch job submission failed" "$psub_slurm_tmpoutfile" && exit 0

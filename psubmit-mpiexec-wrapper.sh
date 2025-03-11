@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 function fatal() {
     local str="$1"
     echo ">>> PSUBMIT: FATAL: $str"
@@ -125,32 +126,21 @@ function psub_get_nodelist {
     set +f
 }
 
-while getopts ":w:t:i:n:p:h:g:d:e:o:a:x" opt; do
+while getopts ":w:t:i:n:p:h:g:d:s:e:o:a:x" opt; do
   case $opt in
-    t) export PSUBMIT_BATCH_TYPE="$OPTARG"
-      ;;
-    i) export PSUBMIT_JOBID="$OPTARG"
-      ;;
-    p) export PSUBMIT_PPN="$OPTARG"
-      ;;
-    h) export PSUBMIT_NTH="$OPTARG"
-      ;;
-    g) export PSUBMIT_NGPUS="$OPTARG"
-      ;;
-    n) export PSUBMIT_NP="$OPTARG"
-      ;;
-    d) export PSUBMIT_DIRNAME="$OPTARG"
-      ;;
-    e) TARGET_BIN_CMDLINE="$OPTARG"
-      ;;
-    o) OPTIONSFILE="$OPTARG"
-      ;;
-    a) ARGS="$OPTARG"
-      ;;
-    x) PSUBMIT_DBG=1 
-      ;;
-    w) cd "$OPTARG"
-      ;;
+    t) export PSUBMIT_BATCH_TYPE="$OPTARG";;
+    i) export PSUBMIT_JOBID="$OPTARG";;
+    p) export PSUBMIT_PPN="$OPTARG";;
+    h) export PSUBMIT_NTH="$OPTARG";;
+    g) export PSUBMIT_NGPUS="$OPTARG";;
+    n) export PSUBMIT_NP="$OPTARG";;
+    d) export PSUBMIT_DIRNAME="$OPTARG";;
+    s) export PSUBMIT_SUBDIR="$OPTARG";;
+    e) TARGET_BIN_CMDLINE="$OPTARG";;
+    o) OPTIONSFILE="$OPTARG";;
+    a) ARGS="$OPTARG";;
+    x) PSUBMIT_DBG=1;;
+    w) cd "$OPTARG";;
   esac
 done
 
