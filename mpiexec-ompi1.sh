@@ -34,21 +34,35 @@ else
     #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
 
     export PSUBMIT_JOBID PSUBMIT_NP
-    [ -z "$PSUBMIT_PREPROC" ] || eval $PSUBMIT_PREPROC
+    [ -z "$PSUBMIT_PREPROC" ] || source $PSUBMIT_PREPROC
 
-    echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
-    echo ">>> PSUBMIT: Executable is: " $(which $TARGET_BIN)
-#    echo ">>> PSUBMIT: ldd:"
-#    ldd $(which $TARGET_BIN)
-    
-    time2=$(date +"%s");
-    echo $- | grep -q x && omit_setx=true || set -x
-    mpirun --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$TARGET_BIN" $ALL_ARGS
-    [ -z "$omit_setx" ] && set +x
+    if [ "$TARGET_BIN" != "false" ]; then
+        echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
+        case $TARGET_BIN in
+        /*)  executable=$TARGET_BIN;;
+        ./*) executable="$TARGET_BIN";;
+        *)   executable=$PSUBMIT_SUBDIR/$TARGET_BIN
+             if [ ! -e $executable ]; then
+                 executable=$(which $TARGET_BIN)
+             fi
+             ;;
+        esac
+        echo ">>> PSUBMIT: Executable is: " $executable
+        if [ ! -z "$executable" -o ! -x "$executable" ]; then
+            echo ">>> PSUBMIT: Executable is: " $(which $executable)
+            
+            time2=$(date +"%s");
 
-    time3=$(date +"%s");
-    [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
-    echo ">>> PSUBMIT: Walltime: $walltime"
+            echo $- | grep -q x && omit_setx=true || set -x
+            mpirun --bind-to core -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node -output-filename out.$PSUBMIT_JOBID "$executable" $ALL_ARGS
+            { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
 
-	[ -z "$PSUBMIT_POSTPROC" ] || eval $PSUBMIT_POSTPROC
+            time3=$(date +"%s");
+            [ "$(expr $time3 - $time1)" -lt "2" ] && sleep $(expr 2 - $time3 + $time1)
+            echo ">>> PSUBMIT: Walltime: $walltime"
+        else
+            echo ">>> PSUBMIT: ERROR: can't find or execute the program"
+        fi
+    fi
+	[ -z "$PSUBMIT_POSTPROC" ] || source $PSUBMIT_POSTPROC
 fi

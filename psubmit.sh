@@ -1,63 +1,36 @@
 #!/bin/bash
 
 function usage() {
-    echo "Usage: " $(basename $0) "-n NUM_NODES [-p PROC_PER_NODE] [-t NTHREADS] [-o options_file] [-a args] [-e executable_bunary] [-b preproc_script] [-f postproc_script] [-x]"; exit 1;
+    echo -ne "Usage: " $(basename $0) "[-n NUM_NODES] [-p PROC_PER_NODE] [-t NTHREADS] \n    [-o options_file] [-a args] [-e executable_binary] [-u subdirectory]\n    [-b preproc_script] [-f postproc_script] \n    [-l key=value:key=value:... \n    [-x] [-s]\n"; exit 1;
 }
 
 NNODES=1
 PPN="-"
 NTH="1"
-OPTSCRIPT=./psubmit.opt
+OPTSCRIPT=psubmit.opt
 ARGS=""
 
-while getopts "n:p:t:o:a:b:f:l:e:xs" opt; do
-  case $opt in
-    n)
-      NNODES_CMDLINE=$OPTARG
-      ;;
-    p)
-      PPN_CMDLINE=$OPTARG
-      ;;
-    t) 
-      NTH_CMDLINE=$OPTARG
-      ;;
-    e)
-      TARGET_BIN_CMDLINE=$OPTARG
-      ;;
-    o)
-      OPTSCRIPT=$OPTARG
-      ;;
-    a)
-      ARGS="$OPTARG"
-      ;;
-    x)
-      PSUBMIT_DBG="ON" 
-      ;;
-    s)  
-      PSUBMIT_OMIT_STACKTRACE_SCAN="ON"
-      ;;
-    b) 
-      export PSUBMIT_PREPROC="$OPTARG"
-      ;;
-    f) 
-      export PSUBMIT_POSTPROC="$OPTARG"
-      ;;
-    l)
-      export PSUBMIT_OPTLIST="$OPTARG"
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" >&2
-      usage
-      ;;
-    :)
-      echo "Option -$OPTARG requires an argument." >&2
-      usage
-      ;;
-  esac
+while getopts ":n:p:t:o:a:b:f:l:u:e:xs" opt; do
+    case $opt in
+        n) NNODES_CMDLINE=$OPTARG;;
+        p) PPN_CMDLINE=$OPTARG;;
+        t) NTH_CMDLINE=$OPTARG;;
+        e) TARGET_BIN_CMDLINE=$OPTARG;;
+        o) OPTSCRIPT=$OPTARG;;
+        a) ARGS="$OPTARG";;
+        x) export PSUBMIT_DBG="ON";;
+        s) export PSUBMIT_OMIT_STACKTRACE_SCAN="ON";;
+        b) export PSUBMIT_PREPROC="$OPTARG";;
+        f) export PSUBMIT_POSTPROC="$OPTARG";;
+        l) export PSUBMIT_OPTLIST="$OPTARG";;
+        u) SUBDIR_CMDLINE="$OPTARG";;
+        \?) echo "Invalid option: -$OPTARG" >&2; usage;;
+        :)  echo "Option -$OPTARG requires an argument." >&2; usage;;
+    esac
 done
 
 
-PSUBMIT_DIRNAME=$(cd $(dirname "$0") && pwd -P)
+export PSUBMIT_DIRNAME=$(cd $(dirname "$0") && pwd -P)
 
 # All these options can be overriden by psubmit.opt script
 QUEUE=""
@@ -68,10 +41,23 @@ TARGET_BIN="hostname"
 MPIEXEC="generic"
 BATCH="slurm"
 
-if [ -f "$OPTSCRIPT" ]; then
-    . "$OPTSCRIPT"
+if [ -v PSUBMIT_OPTLIST ]; then
+    for opt in $(echo $PSUBMIT_OPTLIST | tr ':' ' '); do
+       case $opt in
+       subdir=*) PSUBMIT_SUBDIR=$(echo $opt | cut -d= -f2);;
+       esac
+    done
+fi
+PSUBMIT_SUBDIR=${PSUBMIT_SUBDIR:-"."}
+PSUBMIT_SUBDIR=${SUBDIR_CMDLINE:-"$PSUBMIT_SUBDIR"}
+export PSUBMIT_SUBDIR
+
+[ -e "$PSUBMIT_SUBDIR" ] || { echo "FATAL: assigned subdirectory \"$PSUBMIT_SUBDIR\" does not exist"; exit 1; }
+
+if [ -f "$PSUBMIT_SUBDIR/$OPTSCRIPT" ]; then
+    . "$PSUBMIT_SUBDIR/$OPTSCRIPT"
 else
-    echo "Cannot open options script:" "$OPTSCRIPT"
+    echo "Cannot open options script:" "$PSUBMIT_SUBDIR/$OPTSCRIPT"
     exit 1
 fi
 
@@ -92,6 +78,7 @@ if [ -v PSUBMIT_OPTLIST ]; then
        batch=*) BATCH=$(echo $opt | cut -d= -f2);;
        before=*) BEFORE=$(echo $opt | cut -d= -f2);;
        after=*) AFTER=$(echo $opt | cut -d= -f2);;
+       subdir=*) true;;
        *) echo "Unknown key in the options list supplied by -l option"; usage;;
        esac
     done
@@ -100,6 +87,7 @@ fi
 [ -z "$NNODES_CMDLINE" ] || NNODES="$NNODES_CMDLINE"
 [ -z "$PPN_CMDLINE" ] || PPN="$PPN_CMDLINE"
 [ -z "$NTH_CMDLINE" ] || NTH="$NTH_CMDLINE"
+[ -z "$NGPUS" ] && NGPUS=0
 [ -z "$TARGET_BIN_CMDLINE" ] || TARGET_BIN="$TARGET_BIN_CMDLINE"
 export TARGET_BIN
 
@@ -110,6 +98,23 @@ fi
 
 [ -z "$BEFORE" -a -z "$PSUBMIT_PREPROC" ] || export PSUBMIT_PREPROC="${PSUBMIT_PREPROC:=$BEFORE}"
 [ -z "$AFTER" -a -z "$PSUBMIT_POSTPROC" ] || export PSUBMIT_POSTPROC="${PSUBMIT_POSTPROC:=$AFTER}"
+
+## NOTE: temporary workaround for "source ./preproc.sh" setting 
+## (which must be changed to "preproc.sh")
+if [ ! -z "$PSUBMIT_PREPROC" ]; then
+    case "$PSUBMIT_PREPROC" in
+    source\ *) PSUBMIT_PREPROC=$PSUBMIT_SUBDIR/$(echo $PSUBMIT_PREPROC | cut -d' ' -f2);;
+    ./*) ;;
+    *) PSUBMIT_PREPROC=$PSUBMIT_SUBDIR/$PSUBMIT_PREPROC;;
+    esac
+fi
+if [ ! -z "$PSUBMIT_POSTPROC" ]; then
+    case "$PSUBMIT_POSTPROC" in
+    source\ *) PSUBMIT_POSTPROC=$PSUBMIT_SUBDIR/$(echo $PSUBMIT_POSTPROC | cut -d' ' -f2);;
+    ./*) ;;
+    *) PSUBMIT_POSTPROC=$PSUBMIT_SUBDIR/$PSUBMIT_POSTPROC;;
+    esac
+fi
 
 n=$(expr $NNODES \* $PPN)
 
