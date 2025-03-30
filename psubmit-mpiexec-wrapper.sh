@@ -175,7 +175,7 @@ else
     exit 1
 fi
 
-[ -z "$INJOB_INIT_COMMANDS" ] || eval "$INJOB_INIT_COMMANDS"
+[ -z "$INJOB_INIT_COMMANDS" ] || { info "INJOB_INIT_COMMANDS: \"$INJOB_INIT_COMMANDS\""; eval "$INJOB_INIT_COMMANDS"; }
 
 psub_get_nodelist
 info "Nodelist $PSUBMIT_NODELIST"

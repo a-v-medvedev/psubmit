@@ -2,9 +2,6 @@
 
 #t1=$(date +"%s")
 
-# FIXME we have to introduce this into the config file in some way
-#NGPUS=8
-
 ALL_ARGS=$(eval echo '' $*)
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_JOBID%/$PSUBMIT_JOBID/g")
 ALL_ARGS=$(echo $ALL_ARGS | sed "s/%PSUBMIT_NP%/$PSUBMIT_NP/g")
