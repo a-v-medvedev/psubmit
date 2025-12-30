@@ -42,6 +42,7 @@ else
     
     if [ "$TARGET_BIN" != "false" ]; then
         [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
+        [ -f "hostfile.$PSUBMIT_JOBID" ] && sed -i 's/:[0-9]*$//' hostfile.$PSUBMIT_JOBID
 
         echo ">>> PSUBMIT: mpirun is: " $(which mpirun)
         echo ">>> PSUBMIT: mpiexec is: " $(which mpiexec)
@@ -58,6 +59,7 @@ else
         echo ">>> PSUBMIT: exetable is: " $executable
         if [ ! -z "$executable" -o ! -x "$executable" ]; then
             [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
+            [ -z "$machinefile" ] || unset SLURM_JOBID  
     
             time2=$(date +"%s");
 
