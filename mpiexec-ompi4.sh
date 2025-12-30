@@ -58,7 +58,7 @@ else
         esac 
         echo ">>> PSUBMIT: exetable is: " $executable
         if [ ! -z "$executable" -o ! -x "$executable" ]; then
-            [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
+            #[ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
             [ -z "$machinefile" ] || unset SLURM_JOBID  
     
             time2=$(date +"%s");
