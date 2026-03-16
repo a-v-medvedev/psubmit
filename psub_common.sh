@@ -3,6 +3,7 @@ function psub_check_if_exited() {
 }
 
 function psub_update_oldjobstatus() {
+    [ -z "$jobstatus" ] && return 0
     if [ "$jobstatus" != "$oldjobstatus" ]; then echo "Job status: $jobstatus"; fi
     oldjobstatus=$jobstatus
 }
@@ -10,6 +11,17 @@ function psub_update_oldjobstatus() {
 function psub_common_set_paths() {
     PSUBMIT_PWD="$PWD"
     PSUBMIT_HOME="$HOME"
+}
+
+function psub_common_signal_timeout() {
+    [ ! -f "$FILE_OUT" -o "$jobid" == "" ] && return
+    local dir="$PSUBMIT_PWD"
+    local results="$dir/results.$jobid_short"
+    local stackfile="$results/stacktrace.$jobid_short"
+    [ ! -d "$results" ] && return
+    [ -e "$stackfile" ] && return
+    echo ">> STATUS: TIMEOUT" >> "$stackfile"
+    return 0
 }
 
 function psub_common_move_outfiles() {
@@ -75,13 +87,14 @@ function psub_common_move_outfiles() {
         [ -z "$erank_not_empty" ] || { echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $dir/results.$jobid_short/erank0; }
         [ -z "$erank_not_empty" ] || echo -ne "\n--- NOTE: THERE ARE ERROR OUTPUT FILES\n"
     fi
+    return 0
 }
 
 function psub_common_make_stackfile() {
     local dir="$PSUBMIT_PWD"
 	local stackdir=$dir/results.$jobid_short
     if [ -d "$dir/results.$jobid_short/out.$jobid_short" ]; then
-		stackdir="$dir/results.$jobid_short"
+		stackdir="$dir/results.$jobid_short/out.$jobid_short"
 	fi
 	rm -f __result.$jobid_short __stack.$jobid_short
 	touch __stack.$jobid_short
@@ -117,6 +130,7 @@ function psub_common_make_stackfile() {
 		mv stacktrace.$jobid_short $dir/results.$jobid_short
 	fi
 	rm -f __result.$jobid_short __stack.$jobid_short
+    return 0
 }
 
 function psub_common_cleanup() {

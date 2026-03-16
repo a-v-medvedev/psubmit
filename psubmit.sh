@@ -178,20 +178,37 @@ done
 sleep 0.5
 psub_check_job_status
 
+wait_job_done() {
+    for i in $(seq 0 1 $1); do 
+        sleep 0.1; 
+        psub_check_job_done;
+        [ "$jobdone" == "1" ] && return 0
+    done
+    return 0
+}
+
 while true
 do
     psub_check_job_done
     [ "$jobdone" == "1" ] && break
 
     psub_check_job_status
-    if [ "$jobstatus" == "NONE" ]; then psub_check_job_done; break; fi
-    if [ "$jobstatus" == "C" ]; then psub_check_job_done; break; fi
-    if [ "$jobstatus" == "DONE" ]; then break; fi
-    if [ "$jobstatus" == "E" ]; then psub_check_job_done; break; fi
+    case "$jobstatus" in
+        NONE)       wait_job_done 20; break;;
+        C|E)        wait_job_done 5;  break;;
+        T)          psub_update_oldjobstatus; break;;
+        DONE)       psub_update_oldjobstatus; break;; 
+    esac
     sleep 0.1
 done
 
+if [ "$jobstatus" == "T" ]; then
+    export PSUBMIT_JOBID="$jobid_short"
+    [ -z "$PSUBMIT_POSTPROC" ] || $PSUBMIT_POSTPROC "TIMEOUT"
+fi
 psub_move_outfiles
 [ "$PSUBMIT_OMIT_STACKTRACE_SCAN" == "ON" ] || psub_make_stackfile
+[ "$jobstatus" == "T" ] && psub_common_signal_timeout
+    
 
 
