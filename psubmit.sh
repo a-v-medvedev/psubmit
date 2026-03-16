@@ -210,5 +210,5 @@ psub_move_outfiles
 [ "$PSUBMIT_OMIT_STACKTRACE_SCAN" == "ON" ] || psub_make_stackfile
 [ "$jobstatus" == "T" ] && psub_common_signal_timeout
     
-return 0
+exit 0
 
