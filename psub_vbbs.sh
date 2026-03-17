@@ -8,6 +8,7 @@ outfile=""
 function psub_check_job_status() {
     if [ "$jobstatus" == "E" ]; then jobstatus="DONE"; return; fi
     if [ "$jobstatus" == "DONE" ]; then return; fi
+    if [ "$jobstatus" == "T" ]; then return; fi
     if [ "$jobstatus" == "Q" ]; then
         NBGJOBS=$(jobs -rp | wc -l)
         if [ "$NBGJOBS" -eq "0" ]; then 
@@ -31,15 +32,21 @@ function psub_check_job_status() {
             cat $outfile > $FILE_OUT
 
             # Start a background mpiexec
-            timeout -k20 ${TIME_LIMIT}m $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t vbbs -i $jobid_short -n "$NP" -p "$PPN" -h "$NTH" -g "$NGPUS" -d "$PSUBMIT_DIRNAME" -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" > "$FILE_OUT" 2>&1 &
+            timeout -v -k20 ${TIME_LIMIT}m $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t vbbs -i $jobid_short -n "$NP" -p "$PPN" -h "$NTH" -g "$NGPUS" -d "$PSUBMIT_DIRNAME" -e "$TARGET_BIN" -o "$OPTSCRIPT" -a "\"$ARGS\"" > "$FILE_OUT" 2>&1 &
             # Start a background ssh session
             #ssh $headnode export PATH=$PATH \&\& export LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \&\& export PSUBMIT_NODELIST="$PSUBMIT_NODELIST" \&\& cd "$PWD" \&\& timeout -k20 ${TIME_LIMIT}m $PSUBMIT_DIRNAME/psubmit-mpiexec-wrapper.sh -t vbbs -i $jobid_short -n "$NP" -p "$PPN" -d "$PSUBMIT_DIRNAME" -o "$OPTSCRIPT" -a "\"$ARGS\"" > "$FILE_OUT" 2>&1 &
         fi
     fi
     if [ "$jobstatus" == "R" ]; then
         NBGJOBS=$(jobs -rp | wc -l)
-        if [ "$NBGJOBS" -eq "0" ]; then 
-            jobstatus="DONE"
+        if [ "$NBGJOBS" -eq "0" ]; then
+            local is_timeout="false" 
+            grep -q 'timeout: sending signal TERM to command' "$FILE_OUT" && is_timeout="true"
+            if [ "$is_timeout" == "true" ]; then
+                jobstatus="T"
+            else
+                jobstatus="DONE"
+            fi
             vbbs stop $jobid
             #rm -f hostfile.$jobid
         fi
