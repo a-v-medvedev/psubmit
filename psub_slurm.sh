@@ -15,7 +15,7 @@ psub_check_job_status() {
         psub_check_job_done
 		[ "$jobdone" == "1" ] && return 0
         local postmortem_state=$(sacct -j "$jobid_short" -n --format=JobID,State | grep "$jobid_short " | awk '{print $2}')
-        local exitcode=$(sacct -j "$jobid_short" --format=State)
+        local exitcode=$(sacct -j "$jobid_short" --format=JobID,State | awk '$1=='$jobid_short' {print $2}' | tail -n1)
         case "$postmortem_state" in
             COMPLETED) jobstatus=DONE;;
             FAILED)    echo "JOB COMPLETED WITH NON-ZERO EXIT CODE: $exitcode"
