@@ -40,6 +40,7 @@ INJOB_INIT_COMMANDS=""
 TARGET_BIN="hostname"
 MPIEXEC="generic"
 BATCH="slurm"
+RESDIR=""
 
 if [ -v PSUBMIT_OPTLIST ]; then
     for opt in $(echo $PSUBMIT_OPTLIST | tr ':' ' '); do
@@ -78,7 +79,8 @@ if [ -v PSUBMIT_OPTLIST ]; then
        batch=*) BATCH=$(echo $opt | cut -d= -f2);;
        before=*) BEFORE=$(echo $opt | cut -d= -f2);;
        after=*) AFTER=$(echo $opt | cut -d= -f2);;
-       subdir=*) true;;
+       subdir=*) true;; # already handled above
+       resdir=*) RESDIR=$(echo $opt | cut -d= -f2);;
        *) echo "Unknown key in the options list supplied by -l option"; usage;;
        esac
     done
@@ -206,6 +208,7 @@ if [ "$jobstatus" == "T" ]; then
     export PSUBMIT_JOBID="$jobid_short"
     [ -z "$PSUBMIT_POSTPROC" ] || $PSUBMIT_POSTPROC "TIMEOUT"
 fi
+export PSUBMIT_RESDIR=${RESDIR:="$PSUBMIT_PWD/results.$jobid_short"}
 psub_move_outfiles
 [ "$PSUBMIT_OMIT_STACKTRACE_SCAN" == "ON" ] || psub_make_stackfile
 [ "$jobstatus" == "T" ] && psub_common_signal_timeout

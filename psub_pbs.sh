@@ -62,8 +62,7 @@ psub_set_outfiles() {
 
 psub_move_outfiles() {
     psub_common_move_outfiles
-    local dir="$PSUBMIT_PWD"
-    local target="$dir/results.$jobid_short"
+    local target="$PSUBMIT_RESDIR"
     mv pbs_output.e$jobid_short "$target"
     [ -z "$PBSFILE" ] || rm -f $PBSFILE
 }

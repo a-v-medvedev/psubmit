@@ -15,7 +15,7 @@ psub_check_job_status() {
         psub_check_job_done
 		[ "$jobdone" == "1" ] && return 0
         local postmortem_state=$(sacct -j "$jobid_short" -n --format=JobID,State | grep "$jobid_short " | awk '{print $2}')
-        local exitcode=$(sacct -j "$jobid_short" --format=JobID,State | awk '$1=='$jobid_short' {print $2}' | tail -n1)
+        local exitcode=$(sacct -j "$jobid_short" --format=State)
         case "$postmortem_state" in
             COMPLETED) jobstatus=DONE;;
             FAILED)    echo "JOB COMPLETED WITH NON-ZERO EXIT CODE: $exitcode"
@@ -132,8 +132,7 @@ psub_move_outfiles() {
 
 function psub_make_stackfile() {
     psub_common_make_stackfile
-    local dir="$PSUBMIT_PWD"
-    local results="$dir/results.$jobid_short"
+    local results="$PSUBMIT_RESDIR"
     local timeout=""
     local slurm_out="$results/psubmit_wrapper_output.$jobid_short"
     local stacktrace="$results/stacktrace.$jobid_short"

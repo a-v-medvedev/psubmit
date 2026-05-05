@@ -15,8 +15,7 @@ function psub_common_set_paths() {
 
 function psub_common_signal_timeout() {
     [ ! -f "$FILE_OUT" -o "$jobid" == "" ] && return
-    local dir="$PSUBMIT_PWD"
-    local results="$dir/results.$jobid_short"
+    local results="$PSUBMIT_RESDIR"
     local stackfile="$results/stacktrace.$jobid_short"
     [ ! -d "$results" ] && return
     [ -e "$stackfile" ] && return
@@ -28,73 +27,73 @@ function psub_common_move_outfiles() {
     [ ! -f "$FILE_OUT" -o "$jobid" == "" ] && return
     local dir="$PSUBMIT_PWD"
     local home="$PSUBMIT_HOME"
-    mkdir -p $dir/results.$jobid_short
+    [ -e "$PSUBMIT_RESDIR" ] && rm -rf "$PSUBMIT_RESDIR"
+    mkdir -p $PSUBMIT_RESDIR
     if [ -f $FILE_OUT ]; then 
-        mv $FILE_OUT $dir/results.$jobid_short
+        mv $FILE_OUT $PSUBMIT_RESDIR
         oldpwd=$(pwd)
         cd $dir/
         ln -s $(basename $FILE_OUT) batch.${jobid_short}.out
         cd $oldpwd
     fi
-    [ -f psubmit_wrapper_output.$jobid_short ] && mv psubmit_wrapper_output.$jobid_short $dir/results.$jobid_short
-    [ -f hostfile.$jobid_short ] && mv hostfile.$jobid_short $dir/results.$jobid_short
+    [ -f psubmit_wrapper_output.$jobid_short ] && mv psubmit_wrapper_output.$jobid_short $PSUBMIT_RESDIR
+    [ -f hostfile.$jobid_short ] && mv hostfile.$jobid_short $PSUBMIT_RESDIR
     local rank0=""
     local erank_not_empty=""
     local r=$(ls -1d $dir/out.$jobid_short.* 2> /dev/null)
     local rr=$(ls -1d $dir/out.$jobid_short 2> /dev/null)
     if [ "$r" != "" -o "$rr" != "" ]; then
-        [ -z "$r" ] || mv $dir/out.${jobid_short}.* $dir/results.$jobid_short
-        [ -z "$rr" ] || mv $dir/out.${jobid_short} $dir/results.$jobid_short
+        [ -z "$r" ] || mv $dir/out.${jobid_short}.* $PSUBMIT_RESDIR
+        [ -z "$rr" ] || mv $dir/out.${jobid_short} $PSUBMIT_RESDIR
         PSUBMIT_NP=$(expr $NNODES \* $PPN); PSUBMIT_JOBID=$jobid_short
         local f=$(. "$MPIEXEC" --show-rank0-out)
         local fe=$(. "$MPIEXEC" --show-rank0-err)
-        [ ! -z "$f" -a -f "$dir/results.$jobid_short/$f" ] && { ln -s "$f" "$dir/results.$jobid_short/rank0"; rank0="TRUE";}
-        [ ! -z "$fe" -a -f "$dir/results.$jobid_short/$fe" ] && { ln -s "$fe" "$dir/results.$jobid_short/erank0"; }
+        [ ! -z "$f" -a -f "$PSUBMIT_RESDIR/$f" ] && { ln -s "$f" "$dir/$(basename $PSUBMIT_RESDIR)/rank0"; rank0="TRUE";}
+        [ ! -z "$fe" -a -f "$PSUBMIT_RESDIR/$fe" ] && { ln -s "$fe" "$dir/$(basename $PSUBMIT_RESDIR)/erank0"; }
         erank_not_empty=$(. "$MPIEXEC" --has-err)
     fi
     r=$(ls -1d $dir/err.$jobid_short.* 2> /dev/null)
     if [ "$r" != "" ]; then
         erank_not_empty=$(. "$MPIEXEC" --has-err)
-        mv $dir/err.$jobid_short.* $dir/results.$jobid_short
+        mv $dir/err.$jobid_short.* $PSUBMIT_RESDIR
         PSUBMIT_NP=$(expr $NNODES \* $PPN); PSUBMIT_JOBID=$jobid_short
         local fe=$(. "$MPIEXEC" --show-rank0-err)
-        [ ! -z "$fe" -a -f "$dir/results.$jobid_short/$fe" ] && { ln -s "$fe" "$dir/results.$jobid_short/erank0"; }
+        [ ! -z "$fe" -a -f "$PSUBMIT_RESDIR/$fe" ] && { ln -s "$fe" "$dir/$(basename $PSUBMIT_RESDIR)/erank0"; }
     fi
     r=$(ls -1d $dir/*.${jobid_short}.* $dir/*.${jobid_short} 2> /dev/null)
     if [ "$r" != "" ]; then
         for f in $r; do
             x=$(basename $f | grep '^[^.]*\.'${jobid_short}'\.[^.]*$')
-            [ -z "$x" ] || mv "$f" $dir/results.$jobid_short
+            [ -z "$x" ] || mv "$f" $PSUBMIT_RESDIR
             x=$(basename $f | grep '^.*\.'${jobid_short}'$')
-            if [ "$x" != "results.$jobid_short" ]; then
-                [ -z "$x" ] || mv "$f" $dir/results.$jobid_short
+            if [ "$x" != "$(basename $PSUBMIT_RESDIR)" ]; then
+                [ -z "$x" ] || mv "$f" $PSUBMIT_RESDIR
             fi
         done
     fi
-    echo "Results collected:" "results.${jobid_short}/"
-    [ -z "$rank0" ] || echo "Rank 0 output:" results.$jobid_short/rank0
-    [ -z "$erank_not_empty" ] || echo "Rank 0 errout:" results.$jobid_short/erank0
-    echo "Batch system output:" results.$jobid_short/`basename $FILE_OUT`
-    echo "Psubmit wrapper output:" results.$jobid_short/psubmit_wrapper_output.$jobid_short
+    echo "Results collected:" "$(basename $PSUBMIT_RESDIR)/"
+    [ -z "$rank0" ] || echo "Rank 0 output:" $(basename $PSUBMIT_RESDIR)/rank0
+    [ -z "$erank_not_empty" ] || echo "Rank 0 errout:" $(basename $PSUBMIT_RESDIR)/erank0
+    echo "Batch system output:" $(basename $PSUBMIT_RESDIR)/$(basename $FILE_OUT)
+    echo "Psubmit wrapper output:" $(basename $PSUBMIT_RESDIR)/psubmit_wrapper_output.$jobid_short
     if true; then
         echo -ne "\n--- Batch system output: ---\n"
-        tail -n15 $dir/results.$jobid_short/$(basename $FILE_OUT)
+        tail -n15 $PSUBMIT_RESDIR/$(basename $FILE_OUT)
         echo -ne "\n--- Psubmit wrapper output: ---\n"
-        tail -n15 $dir/results.$jobid_short/psubmit_wrapper_output.$jobid_short
-        if [ ! -z "$rank0" -a "$(cat $dir/results.$jobid_short/rank0 | wc -l)" != "0" ]; then
-            echo -ne "\n--- Rank 0 output: ---\n" && tail -n15 $dir/results.$jobid_short/rank0;
+        tail -n15 $PSUBMIT_RESDIR/psubmit_wrapper_output.$jobid_short
+        if [ ! -z "$rank0" -a "$(cat $PSUBMIT_RESDIR/rank0 | wc -l)" != "0" ]; then
+            echo -ne "\n--- Rank 0 output: ---\n" && tail -n15 $PSUBMIT_RESDIR/rank0;
         fi 
-        [ -z "$erank_not_empty" ] || { echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $dir/results.$jobid_short/erank0; }
+        [ -z "$erank_not_empty" ] || { echo -ne "\n--- Rank 0 errout: ---\n" && tail -n15 $PSUBMIT_RESDIR/erank0; }
         [ -z "$erank_not_empty" ] || echo -ne "\n--- NOTE: THERE ARE ERROR OUTPUT FILES\n"
     fi
     return 0
 }
 
 function psub_common_make_stackfile() {
-    local dir="$PSUBMIT_PWD"
-	local stackdir=$dir/results.$jobid_short
-    if [ -d "$dir/results.$jobid_short/out.$jobid_short" ]; then
-		stackdir="$dir/results.$jobid_short/out.$jobid_short"
+	local stackdir=$PSUBMIT_RESDIR
+    if [ -d "$PSUBMIT_RESDIR/out.$jobid_short" ]; then
+		stackdir="$PSUBMIT_RESDIR/out.$jobid_short"
 	fi
 	rm -f __result.$jobid_short __stack.$jobid_short
 	touch __stack.$jobid_short
@@ -127,7 +126,7 @@ function psub_common_make_stackfile() {
 		echo "$R" >> stacktrace.$jobid_short
 		echo >> stacktrace.$jobid_short
 		cat __stack.$jobid_short >> stacktrace.$jobid_short
-		mv stacktrace.$jobid_short $dir/results.$jobid_short
+		mv stacktrace.$jobid_short $PSUBMIT_RESDIR
 	fi
 	rm -f __result.$jobid_short __stack.$jobid_short
     return 0
