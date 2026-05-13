@@ -115,7 +115,7 @@ function psub_make_stackfile() {
     [ -e "$stacktrace" ] && return
     local timeout=""
     grep -q "timeout: sending signal TERM to command" $vbbs_out && timeout=TRUE
-    [ -z "$timeout" ] && echo ">> STATUS: TIMEOUT" >> "$stacktrace"
+    [ -z "$timeout" ] || echo ">> STATUS: TIMEOUT" >> "$stacktrace"
 }
 
 function psub_cleanup() {

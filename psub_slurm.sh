@@ -138,7 +138,7 @@ function psub_make_stackfile() {
     local stacktrace="$results/stacktrace.$jobid_short"
     [ -e "$stacktrace" ] && return
     grep -q "slurmstepd: error: \*\*\* JOB $jobid_short ON .* CANCELLED AT .* DUE TO TIME LIMIT \*\*\*" $slurm_out && timeout=TRUE
-    [ -z "$timeout" ] && echo ">> STATUS: TIMEOUT" >> "$stacktrace"
+    [ -z "$timeout" ] || echo ">> STATUS: TIMEOUT" >> "$stacktrace"
     return 0
 }
 
