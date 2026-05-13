@@ -109,9 +109,12 @@ function psub_move_outfiles() {
 
 function psub_make_stackfile() {
     psub_common_make_stackfile
+    local results="$PSUBMIT_RESDIR"
+    local vbbs_out="$results/$(basename $FILE_OUT)"
+    local stacktrace="$results/stacktrace.$jobid_short"
     [ -e "$stacktrace" ] && return
     local timeout=""
-    grep -q "timeout: sending signal TERM to command" $FILE_OUT && timeout=TRUE
+    grep -q "timeout: sending signal TERM to command" $vbbs_out && timeout=TRUE
     [ -z "$timeout" ] && echo ">> STATUS: TIMEOUT" >> "$stacktrace"
 }
 
