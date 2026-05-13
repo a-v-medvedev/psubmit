@@ -109,6 +109,10 @@ function psub_move_outfiles() {
 
 function psub_make_stackfile() {
     psub_common_make_stackfile
+    [ -e "$stacktrace" ] && return
+    local timeout=""
+    grep -q "timeout: sending signal TERM to command" $FILE_OUT && timeout=TRUE
+    [ -z "$timeout" ] && echo ">> STATUS: TIMEOUT" >> "$stacktrace"
 }
 
 function psub_cleanup() {
