@@ -22,7 +22,7 @@ while getopts ":n:p:t:o:a:b:f:l:u:e:xs" opt; do
         s) export PSUBMIT_OMIT_STACKTRACE_SCAN="ON";;
         b) export PSUBMIT_PREPROC="$OPTARG";;
         f) export PSUBMIT_POSTPROC="$OPTARG";;
-        l) export PSUBMIT_OPTLIST="$OPTARG";;
+        l) [ -v PSUBMIT_OPTLIST ] && export PSUBMIT_OPTLIST="$PSUBMIT_OPTLIST:$OPTARG"; [ -v PSUBMIT_OPTLIST ] || export PSUBMIT_OPTLIST="$OPTARG";;
         u) SUBDIR_CMDLINE="$OPTARG";;
         \?) echo "Invalid option: -$OPTARG" >&2; usage;;
         :)  echo "Option -$OPTARG requires an argument." >&2; usage;;
