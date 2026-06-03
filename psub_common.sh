@@ -27,6 +27,7 @@ function psub_common_move_outfiles() {
     [ ! -f "$FILE_OUT" -o "$jobid" == "" ] && return
     local dir="$PSUBMIT_PWD"
     local home="$PSUBMIT_HOME"
+    [ -z "$PSUBMIT_RESDIR" ] && return
     [ -e "$PSUBMIT_RESDIR" ] && rm -rf "$PSUBMIT_RESDIR"
     mkdir -p $PSUBMIT_RESDIR
     if [ -f $FILE_OUT ]; then 
