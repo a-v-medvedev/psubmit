@@ -79,6 +79,8 @@ if [ -v PSUBMIT_OPTLIST ]; then
        batch=*) BATCH=$(echo $opt | cut -d= -f2);;
        before=*) BEFORE=$(echo $opt | cut -d= -f2);;
        after=*) AFTER=$(echo $opt | cut -d= -f2);;
+       blacklist=*) BLACKLIST=$(echo $opt | cut -d= -f2);;
+       whitelist=*) WHITELIST=$(echo $opt | cut -d= -f2);;
        subdir=*) true;; # already handled above
        resdir=*) RESDIR=$(echo $opt | cut -d= -f2);;
        *) echo "Unknown key in the options list supplied by -l option"; usage;;
