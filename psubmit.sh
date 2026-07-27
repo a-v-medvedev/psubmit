@@ -71,6 +71,7 @@ if [ -v PSUBMIT_OPTLIST ]; then
        ngpus=*) NGPUS=$(echo $opt | cut -d= -f2);;
        queue=*) QUEUE=$(echo $opt | cut -d= -f2);;
        constraint=*) CONSTRAINT=$(echo $opt | cut -d= -f2);;
+       reservation=*) RESERVATION=$(echo $opt | cut -d= -f2);;
        account=*) ACCOUNT=$(echo $opt | cut -d= -f2);;
        nodetype=*) NODETYPE=$(echo $opt | cut -d= -f2);;
        time=*) TIME_LIMIT=$(echo $opt | cut -d= -f2);;
