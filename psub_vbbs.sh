@@ -23,7 +23,7 @@ function psub_check_job_status() {
 
             [ -z "$PSUBMIT_SUBDIR" ] && PSUBMIT_SUBDIR="."
 
-            export SLURM_JOBID=$(vbbs show_slurm_id 1 | grep SLURM_JOBID | cut -f2 -d' ')
+            export SLURM_JOBID=$(vbbs slurm_show_id 1 | grep SLURM_JOBID | cut -f2 -d' ')
             if [ ${SLURM_JOBID} -lt 1 ]; then
                 unset SLURM_JOBID
             fi
