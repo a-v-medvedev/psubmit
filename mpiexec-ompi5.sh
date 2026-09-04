@@ -17,10 +17,10 @@ NUL="0"
 [ "$PSUBMIT_NP" -gt 1000 ] && NUL="0000"
 [ "$PSUBMIT_NP" -gt 10000 ] && NUL="00000"
 
-export PSUBMIT_RANK0=-
-export PSUBMIT_ERANK0=-
-[ $(num_files_by_mask "out.$PSUBMIT_JOBID.*@1.$NUL.out") == "1" ] && PSUBMIT_RANK0=$(echo "out.$PSUBMIT_JOBID.*@1.$NUL.out"
-[ $(num_files_by_mask "out.$PSUBMIT_JOBID.*@1.$NUL.err") == "1" ] && PSUBMIT_ERANK0=$(echo "out.$PSUBMIT_JOBID.*@1.$NUL.err"
+export PSUBMIT_RANK0=
+export PSUBMIT_ERANK0=
+[ $(num_files_by_mask "out.$PSUBMIT_JOBID.*@1.$NUL.out") == "1" ] && export PSUBMIT_RANK0=$(echo out.$PSUBMIT_JOBID.*@1.$NUL.out)
+[ $(num_files_by_mask "out.$PSUBMIT_JOBID.*@1.$NUL.err") == "1" ] && export PSUBMIT_ERANK0=$(echo out.$PSUBMIT_JOBID.*@1.$NUL.err)
 if [ "$ALL_ARGS" == "--show-rank0-out" ]; then
     echo "$PSUBMIT_RANK0"
 elif [ "$ALL_ARGS" == "--show-rank0-err" ]; then
@@ -80,5 +80,7 @@ else
             echo ">>> PSUBMIT: ERROR: can't find or execute the program"
         fi
     fi
+    [ -z "$PSUBMIT_RANK0" -a $(num_files_by_mask "out.$PSUBMIT_JOBID.*@1.$NUL.out") == "1" ] && export PSUBMIT_RANK0=$(echo out.$PSUBMIT_JOBID.*@1.$NUL.out)
+    [ -z "$PSUBMIT_ERANK0" -a $(num_files_by_mask "out.$PSUBMIT_JOBID.*@1.$NUL.err") == "1" ] && export PSUBMIT_ERANK0=$(echo out.$PSUBMIT_JOBID.*@1.$NUL.err)
     [ -z "$PSUBMIT_POSTPROC" ] || source $PSUBMIT_POSTPROC
 fi
