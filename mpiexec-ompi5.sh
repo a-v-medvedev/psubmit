@@ -69,7 +69,7 @@ else
             # NOTE: for modern ucx-based: you may add: -mca pml ucx -mca btl ^vader,tcp,openib 
 
             echo $- | grep -q x && omit_setx=true || set -x
-            mpirun -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to none -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$executable" $ALL_ARGS
+            mpirun -x PSUBMIT_JOBID -x LBCLNK_KEEP_TESTBED -x NCCL_DEBUG -x PROFILE -x BINARY -x RUNNER_SCRIPT_DEFAULT_BINARY -x RUNNER_SCRIPT_DEFAULT_ARGS -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to none -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node --output-filename out.$PSUBMIT_JOBID "$executable" $ALL_ARGS
             { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
 
             time3=$(date +"%s");

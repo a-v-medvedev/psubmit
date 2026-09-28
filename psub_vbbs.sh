@@ -15,6 +15,11 @@ function psub_check_job_status() {
             jobstatus="R"
 
             # make up a node list
+            #--echo -e ">> vbbs: vbbs start output:\n----------\n$(cat $outfile)\n----------\n$(cat ~/vbbs_hostfile)"
+            slurm_id=$(vbbs slurm_show_id | grep 'SLURM_JOBID: [0-9]*' | awk '{print $2}')
+            if [ "$slurm_id" != "" -a "$slurm_id" != 0 ]; then
+                export SLURM_JOB_ID=$slurm_id
+            fi
             cat $outfile | grep 'node:' | awk -vppn=$PPN '{print $2 ":" ppn }' > hostfile.$jobid
             for n in $(cat hostfile.$jobid); do
                 PSUBMIT_NODELIST=$PSUBMIT_NODELIST,${n}

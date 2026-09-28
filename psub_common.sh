@@ -44,11 +44,11 @@ function psub_common_move_outfiles() {
     local r=$(ls -1d $dir/out.$jobid_short.* 2> /dev/null)
     local rr=$(ls -1d $dir/out.$jobid_short 2> /dev/null)
     if [ "$r" != "" -o "$rr" != "" ]; then
-        [ -z "$r" ] || mv $dir/out.${jobid_short}.* $PSUBMIT_RESDIR
-        [ -z "$rr" ] || mv $dir/out.${jobid_short} $PSUBMIT_RESDIR
         PSUBMIT_NP=$(expr $NNODES \* $PPN); PSUBMIT_JOBID=$jobid_short
         local f=$(. "$MPIEXEC" --show-rank0-out)
         local fe=$(. "$MPIEXEC" --show-rank0-err)
+        [ -z "$r" ] || mv $dir/out.${jobid_short}.* $PSUBMIT_RESDIR
+        [ -z "$rr" ] || mv $dir/out.${jobid_short} $PSUBMIT_RESDIR
         [ ! -z "$f" -a -f "$PSUBMIT_RESDIR/$f" ] && { ln -s "$f" "$dir/$(basename $PSUBMIT_RESDIR)/rank0"; rank0="TRUE";}
         [ ! -z "$fe" -a -f "$PSUBMIT_RESDIR/$fe" ] && { ln -s "$fe" "$dir/$(basename $PSUBMIT_RESDIR)/erank0"; }
         erank_not_empty=$(. "$MPIEXEC" --has-err)
@@ -56,9 +56,9 @@ function psub_common_move_outfiles() {
     r=$(ls -1d $dir/err.$jobid_short.* 2> /dev/null)
     if [ "$r" != "" ]; then
         erank_not_empty=$(. "$MPIEXEC" --has-err)
-        mv $dir/err.$jobid_short.* $PSUBMIT_RESDIR
         PSUBMIT_NP=$(expr $NNODES \* $PPN); PSUBMIT_JOBID=$jobid_short
         local fe=$(. "$MPIEXEC" --show-rank0-err)
+        mv $dir/err.$jobid_short.* $PSUBMIT_RESDIR
         [ ! -z "$fe" -a -f "$PSUBMIT_RESDIR/$fe" ] && { ln -s "$fe" "$dir/$(basename $PSUBMIT_RESDIR)/erank0"; }
     fi
     r=$(ls -1d $dir/*.${jobid_short}.* $dir/*.${jobid_short} 2> /dev/null)
