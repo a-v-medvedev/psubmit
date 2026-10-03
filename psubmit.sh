@@ -58,8 +58,16 @@ export PSUBMIT_SUBDIR
 if [ -f "$PSUBMIT_SUBDIR/$OPTSCRIPT" ]; then
     . "$PSUBMIT_SUBDIR/$OPTSCRIPT"
 else
-    echo "Cannot open options script:" "$PSUBMIT_SUBDIR/$OPTSCRIPT"
-    exit 1
+    if [ -f "$PSUBMIT_SUBDIR/$OPTSCRIPT" ]; then
+        . "$OPTSCRIPT"
+    else 
+        if [ -f "$PSUBMIT_DIRNAME/$OPTSCRIPT" ]; then
+            . "$PSUBMIT_DIRNAME/$OPTSCRIPT"     
+        else
+            echo "Cannot open options script:" "$OPTSCRIPT"
+            exit 1
+        fi 
+    fi
 fi
 
 if [ -v PSUBMIT_OPTLIST ]; then
@@ -110,6 +118,7 @@ if [ ! -z "$PSUBMIT_PREPROC" ]; then
     case "$PSUBMIT_PREPROC" in
     source\ *) PSUBMIT_PREPROC=$PSUBMIT_SUBDIR/$(echo $PSUBMIT_PREPROC | cut -d' ' -f2);;
     ./*) ;;
+    /*)  ;;
     *) PSUBMIT_PREPROC=$PSUBMIT_SUBDIR/$PSUBMIT_PREPROC;;
     esac
 fi
@@ -117,6 +126,7 @@ if [ ! -z "$PSUBMIT_POSTPROC" ]; then
     case "$PSUBMIT_POSTPROC" in
     source\ *) PSUBMIT_POSTPROC=$PSUBMIT_SUBDIR/$(echo $PSUBMIT_POSTPROC | cut -d' ' -f2);;
     ./*) ;;
+    /*)  ;;
     *) PSUBMIT_POSTPROC=$PSUBMIT_SUBDIR/$PSUBMIT_POSTPROC;;
     esac
 fi
