@@ -160,7 +160,11 @@ MPIEXEC="generic"
 BATCH="slurm"
 
 if [ -f "$OPTIONSFILE" ]; then
-. "$OPTIONSFILE"
+    . "$OPTIONSFILE"
+else
+    if [ -f "$PSUBMIT_DIRNAME/$OPTSCRIPT" ]; then
+        . "$PSUBMIT_DIRNAME/$OPTIONSFILE"
+    fi
 fi
 
 export TARGET_BIN="$TARGET_BIN_CMDLINE"

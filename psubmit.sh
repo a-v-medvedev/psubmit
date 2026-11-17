@@ -217,10 +217,8 @@ do
     sleep 0.1
 done
 
-if [ "$jobstatus" == "T" ]; then
-    export PSUBMIT_JOBID="$jobid_short"
-    [ -z "$PSUBMIT_POSTPROC" ] || $PSUBMIT_POSTPROC "TIMEOUT"
-fi
+[ "$jobstatus" == "T" ] && psub_common_handle_timeout
+
 export PSUBMIT_RESDIR=${RESDIR:="$PSUBMIT_PWD/results.$jobid_short"}
 psub_move_outfiles
 [ "$PSUBMIT_OMIT_STACKTRACE_SCAN" == "ON" ] || psub_make_stackfile

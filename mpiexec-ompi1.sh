@@ -47,7 +47,8 @@ else
              fi
              ;;
         esac
-        echo ">>> PSUBMIT: Executable is: " $executable
+        echo ">>> PSUBMIT: executable is: " $executable
+        echo ">>> PSUBMIT: PWD=$PWD"
         if [ ! -z "$executable" -o ! -x "$executable" ]; then
             echo ">>> PSUBMIT: Executable is: " $(which $executable)
             

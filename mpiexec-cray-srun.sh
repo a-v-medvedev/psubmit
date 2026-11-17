@@ -40,10 +40,11 @@ else
              fi
              ;;
         esac
-        echo ">>> PSUBMIT: Executable is: " $executable
+        echo ">>> PSUBMIT: executable is: " $executable
+        echo ">>> PSUBMIT: PWD=$PWD"
         if [ ! -z "$executable" -o ! -x "$executable" ]; then
             if [ -f "hostfile.$PSUBMIT_JOBID" ]; then 
-                [ -z "$SLURM_JOBID" ] && { echo "FATAL: mpiexec-cray-srun.sh: there is a hostfile, so the SLURM_JOBID must be set!"; exit 1; }
+                [ -z "$SLURM_JOBID" ] && { echo "FATAL: mpiexec-srun.sh: there is a hostfile, so the SLURM_JOBID must be set!"; exit 1; }
                 sed -i 's/:.*//' "hostfile.$PSUBMIT_JOBID" 
                 machinefile="-F hostfile.$PSUBMIT_JOBID"
                 overlap="--overlap --jobid=$SLURM_JOBID"

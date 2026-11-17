@@ -34,7 +34,8 @@ else
              fi
              ;;
         esac 
-        echo ">>> PSUBMIT: Executable is: " $executable
+        echo ">>> PSUBMIT: executable is: " $executable
+        echo ">>> PSUBMIT: PWD=$PWD"
         if [ ! -z "$executable" -o ! -x "$executable" ]; then
             [ -f "hostfile.$PSUBMIT_JOBID" ] && machinefile="-machinefile hostfile.$PSUBMIT_JOBID"
             { echo $- | grep -q x && omit_setx=true || set -x; } 2>/dev/null

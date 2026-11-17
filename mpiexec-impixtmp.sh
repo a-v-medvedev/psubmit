@@ -42,7 +42,8 @@ else
              fi
              ;;
         esac
-        echo ">>> PSUBMIT: Executable is: " $executable
+        echo ">>> PSUBMIT: executable is: " $executable
+        echo ">>> PSUBMIT: PWD=$PWD"
         if [ ! -z "$executable" -o ! -x "$executable" ]; then
             newexecname=$(mktemp)
             nds=$(echo $PSUBMIT_NODELIST | sed 's/,/ /g')

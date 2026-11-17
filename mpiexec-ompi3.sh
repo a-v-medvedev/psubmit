@@ -50,7 +50,8 @@ else
              fi
              ;;
         esac
-        echo ">>> PSUBMIT: Executable is: " $executable
+        echo ">>> PSUBMIT: executable is: " $executable
+        echo ">>> PSUBMIT: PWD=$PWD"
         if [ ! -z "$executable" -o ! -x "$executable" ]; then
             [ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
             

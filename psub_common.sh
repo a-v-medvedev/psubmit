@@ -23,6 +23,23 @@ function psub_common_signal_timeout() {
     return 0
 }
 
+function psub_common_handle_timeout() {
+    export PSUBMIT_JOBID="$jobid_short"
+    export PSUBMIT_NP=$(expr $NNODES \* $PPN)
+    psb=psubmit_wrapper_output.$jobid_short
+    if [ -f $psb ]; then
+        dir=$(grep '^>>> PSUBMIT: PWD=' $psb | awk -F'PWD=' '{print $2}' | tail -n1)
+        if [ ! -z "$dir" ]; then
+            oldwd=$PWD
+            cd $dir
+            if [ ! -z "$PSUBMIT_POSTPROC" ]; then 
+               [ -e $PSUBMIT_POSTPROC ] && $PSUBMIT_POSTPROC "TIMEOUT"
+            fi
+            cd $oldwd
+        fi
+    fi
+}
+
 function psub_common_move_outfiles() {
     [ ! -f "$FILE_OUT" -o "$jobid" == "" ] && return
     local dir="$PSUBMIT_PWD"
