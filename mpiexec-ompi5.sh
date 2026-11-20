@@ -33,9 +33,6 @@ else
 
     [ -z "$ALL_ARGS" ] || export PSUBMIT_ARGS="$ALL_ARGS"
 
-    # The line below is to cut off CUDA from the environment
-    #LD_LIBRARY_PATH=`echo $LD_LIBRARY_PATH | sed 's!/opt/cuda[^:]*:!:!g'`
-
     [ -z "$NGPUS" ] && NGPUS=0
     [ -z "$PSUBMIT_NTH" ] && PSUBMIT_NTH=1
     export OMP_NUM_THREADS="$PSUBMIT_NTH"
@@ -62,17 +59,33 @@ else
         echo ">>> PSUBMIT: executable is: " $executable
         echo ">>> PSUBMIT: PWD=$PWD"
         if [ ! -z "$executable" -o ! -x "$executable" ]; then
-            #[ -z "$machinefile" ] || prefix="--prefix $(dirname $(dirname $(which mpirun)))"
-            [ -z "$machinefile" ] || unset SLURM_JOBID
-            #output="--output-filename out.$PSUBMIT_JOBID"
-            output=""
+            prefix="" 
+            output="--output-filename out.$PSUBMIT_JOBID"
+            vars="-x MPIEXEC -x MPIOPTS -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH -x PSUBMIT_JOBID -x PSUBMIT_NP -x PSUBMIT_PPN -x PSUBMIT_NTH"
+            if [ -v MPIOPTS ]; then
+                for opt in $(echo $MPIOPTS | tr ',' ' '); do
+                    case $opt in
+                    CUT_CUDA_OUT=*) optval=$(cut -d= -f2 <<< $opt | tr ':' ' ')
+                                    for v in $optval; do
+                                        export LD_LIBRARY_PATH=$(sed "s!$v[^:]*:!:!g" <<< $LD_LIBRARY_PATH)
+                                    done
+                                    ;;
+                    UNSET_SLURM_ID) unset SLURM_JOBID;;
+                    PREFIX)         prefix="--prefix $(dirname $(dirname $(which mpirun)))"
+                    NO_SPLIT_OUT)   output="";;
+                    VARS=*)         optval=$(cut -d= -f2 <<< $opt | tr ':' ' ')
+                                    for v in $optval; do
+                                        [ -v $v ] && vars="$vars -x $v"
+                                    done
+                                    ;;
+                    esac
+                done
+            fi
     
             time2=$(date +"%s");
 
-            # NOTE: for modern ucx-based: you may add: -mca pml ucx -mca btl ^vader,tcp,openib 
-
             echo $- | grep -q x && omit_setx=true || set -x
-            mpirun -x PSUBMIT_JOBID -x LBCLNK_KEEP_TESTBED -x NCCL_DEBUG -x PROFILE -x BINARY -x RUNNER_SCRIPT_DEFAULT_BINARY -x RUNNER_SCRIPT_DEFAULT_ARGS -x MPIEXEC  -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH  $prefix $machinefile --bind-to none -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node $output "$executable" $ALL_ARGS
+            mpirun $vars $prefix $machinefile --bind-to none -np "$PSUBMIT_NP" --map-by ppr:$PSUBMIT_PPN:node $output "$executable" $ALL_ARGS
             { [ -z "$omit_setx" ] && set +x; } 2>/dev/null
 
             time3=$(date +"%s");

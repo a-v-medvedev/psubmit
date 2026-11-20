@@ -41,6 +41,7 @@ TARGET_BIN="hostname"
 MPIEXEC="generic"
 BATCH="slurm"
 RESDIR=""
+MPIOPTS=""
 
 if [ -v PSUBMIT_OPTLIST ]; then
     for opt in $(echo $PSUBMIT_OPTLIST | tr ':' ' '); do

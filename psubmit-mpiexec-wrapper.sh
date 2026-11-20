@@ -158,6 +158,7 @@ info "PWD=$PWD"
 
 MPIEXEC="generic"
 BATCH="slurm"
+MPIOPTS=""
 
 if [ -f "$OPTIONSFILE" ]; then
     . "$OPTIONSFILE"
