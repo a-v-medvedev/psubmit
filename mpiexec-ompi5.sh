@@ -62,6 +62,7 @@ else
             prefix="" 
             output="--output-filename out.$PSUBMIT_JOBID"
             vars="-x MPIEXEC -x MPIOPTS -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH -x PSUBMIT_JOBID -x PSUBMIT_NP -x PSUBMIT_PPN -x PSUBMIT_NTH"
+            [ -z "$machinefile" ] || unset SLURM_JOBID
             if [ -v MPIOPTS ]; then
                 for opt in $(echo $MPIOPTS | tr ',' ' '); do
                     case $opt in
@@ -71,7 +72,7 @@ else
                                     done
                                     ;;
                     UNSET_SLURM_ID) unset SLURM_JOBID;;
-                    PREFIX)         prefix="--prefix $(dirname $(dirname $(which mpirun)))"
+                    PREFIX)         prefix="--prefix $(dirname $(dirname $(which mpirun)))";;
                     NO_SPLIT_OUT)   output="";;
                     VARS=*)         optval=$(cut -d= -f2 <<< $opt | tr ':' ' ')
                                     for v in $optval; do
