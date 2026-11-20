@@ -64,6 +64,7 @@ else
             vars="-x MPIEXEC -x MPIOPTS -x OMP_NUM_THREADS -x PATH -x LD_LIBRARY_PATH -x PSUBMIT_JOBID -x PSUBMIT_NP -x PSUBMIT_PPN -x PSUBMIT_NTH"
             [ -z "$machinefile" ] || unset SLURM_JOBID
             if [ -v MPIOPTS ]; then
+                export MPIOPTS
                 for opt in $(echo $MPIOPTS | tr ',' ' '); do
                     case $opt in
                     CUT_CUDA_OUT=*) optval=$(cut -d= -f2 <<< $opt | tr ':' ' ')
@@ -76,7 +77,10 @@ else
                     NO_SPLIT_OUT)   output="";;
                     VARS=*)         optval=$(cut -d= -f2 <<< $opt | tr ':' ' ')
                                     for v in $optval; do
-                                        [ -v $v ] && vars="$vars -x $v"
+                                        if [ -v $v ]; then
+                                            vars="$vars -x $v"
+                                            export $v 
+                                        fi
                                     done
                                     ;;
                     esac
